@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Músicas da Rayssa</title>
+
+<style>
+body{
+    background:#111;
+    color:#fff;
+    font-family:sans-serif;
+    text-align:center;
+}
+
+.music{
+    background:#222;
+    margin:10px;
+    padding:15px;
+    border-radius:10px;
+}
+
+audio{
+    width:100%;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>🎧 Músicas da Rayssa</h2>
+<div id="lista"></div>
+
+<script>
+const USER = "felipekoch24";
+const REPO = "MUSICAS_RAYSSA";
+
+async function carregar(){
+    const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/`);
+    const files = await res.json();
+
+    const div = document.getElementById("lista");
+
+    files.forEach(f=>{
+        if(f.name.endsWith(".mp3")){
+            div.innerHTML += `
+            <div class="music">
+                <p>${f.name}</p>
+                <audio controls src="${f.download_url}"></audio>
+            </div>`;
+        }
+    });
+}
+
+carregar();
+</script>
+
+</body>
+</html>
+
+
+

@@ -6,6 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MÚSICAS DA RAY</title>
 
+<link rel="manifest" href="manifest.json">
+
 <style>
 body{
     background: linear-gradient(180deg,#1a002a,#2b0050);
@@ -14,17 +16,27 @@ body{
     text-align:center;
 }
 
+#busca{
+    width:90%;
+    padding:10px;
+    border-radius:10px;
+    border:none;
+    margin-bottom:10px;
+}
+
+/* LISTA */
 .music{
     background:#3a0066;
     margin:10px;
-    padding:15px;
+    padding:10px;
     border-radius:12px;
     cursor:pointer;
-}
-.music:hover{
-    background:#5a00a0;
+    display:flex;
+    align-items:center;
+    gap:10px;
 }
 
+/* PLAYER */
 .player{
     position:fixed;
     bottom:0;
@@ -37,23 +49,17 @@ body{
 .controls{
     display:flex;
     justify-content:center;
-    gap:15px;
+    gap:10px;
     margin-top:10px;
 }
 
 button{
     background:#ff4fd8;
     border:none;
-    padding:10px 15px;
+    padding:10px;
     border-radius:10px;
     color:white;
-    font-weight:bold;
     cursor:pointer;
-}
-
-audio{
-    width:100%;
-    margin-top:10px;
 }
 </style>
 
@@ -63,13 +69,17 @@ audio{
 
 <h2>🎧 MÚSICAS DA RAY</h2>
 
+<input id="busca" placeholder="🔍 Buscar música..." oninput="filtrar()">
+
 <div id="lista"></div>
 
 <div class="player">
+    <img id="capa" width="80" style="border-radius:10px;">
     <div id="agora">Nenhuma música</div>
-    <audio id="audio" controls></audio>
 
 ```
+<audio id="audio" controls></audio>
+
 <div class="controls">
     <button onclick="prev()">⏮</button>
     <button onclick="toggleRepeat()">🔁</button>
@@ -82,47 +92,81 @@ audio{
 <script>
 
 let musicas = [];
+let musicasFiltradas = [];
 let indexAtual = 0;
 let repetir = false;
 
 const audio = document.getElementById("audio");
 const agora = document.getElementById("agora");
+const capa = document.getElementById("capa");
 
-async function carregar(){
+// BUSCA
+function filtrar(){
+    const termo = document.getElementById("busca").value.toLowerCase();
+    musicasFiltradas = musicas.filter(m => m.nome.toLowerCase().includes(termo));
+    renderLista();
+}
+
+// CAPA AUTOMÁTICA
+async function pegarCapa(nome){
     try{
-        const res = await fetch("./musicas.json");
-        musicas = await res.json();
+        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(nome)}&limit=1`);
+        const data = await res.json();
+        if(data.results.length > 0){
+            return data.results[0].artworkUrl100;
+        }
+    }catch(e){}
+    return "https://via.placeholder.com/100";
+}
 
-        const div = document.getElementById("lista");
-        div.innerHTML = "";
+// LISTA
+async function renderLista(){
+    const div = document.getElementById("lista");
+    div.innerHTML = "";
 
-        musicas.forEach((m,i)=>{
-            div.innerHTML += `
-            <div class="music" onclick="play(${i})">
-                ${m.nome}
-            </div>`;
-        });
+    for(let i=0;i<musicasFiltradas.length;i++){
+        const m = musicasFiltradas[i];
+        const capa = await pegarCapa(m.nome);
 
-    }catch(e){
-        document.getElementById("lista").innerText = "❌ Erro ao carregar músicas";
-        console.log(e);
+        div.innerHTML += `
+        <div class="music" onclick="play(${i})">
+            <img src="${capa}" width="50">
+            ${m.nome}
+        </div>`;
     }
 }
 
+// CARREGAR
+async function carregar(){
+    const res = await fetch("./musicas.json");
+    musicas = await res.json();
+    musicasFiltradas = musicas;
+    renderLista();
+}
+
+// PLAY
 function play(i){
     indexAtual = i;
-    audio.src = musicas[i].link;
-    agora.innerText = musicas[i].nome;
+    const m = musicasFiltradas[i];
+
+    audio.src = m.link;
+    agora.innerText = m.nome;
+
+    pegarCapa(m.nome).then(img=>{
+        capa.src = img;
+    });
+
     audio.play();
 }
 
+// CONTROLES
 function next(){
-    indexAtual = (indexAtual + 1) % musicas.length;
+    indexAtual = (indexAtual + 1) % musicasFiltradas.length;
     play(indexAtual);
 }
 
 function prev(){
-    indexAtual = (indexAtual - 1 + musicas.length) % musicas.length;
+    indexAtual = (indexAtual - 1 + musicasFiltradas.length) % musicasFiltradas.length;
     play(indexAtual);
 }
 
@@ -135,9 +179,15 @@ audio.onended = ()=>{
     repetir ? play(indexAtual) : next();
 };
 
+// SERVICE WORKER
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+}
+
 carregar();
 
 </script>
 
 </body>
 </html>
+

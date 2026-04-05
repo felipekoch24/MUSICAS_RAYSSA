@@ -6,60 +6,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MÚSICAS DA RAY</title>
 
-<link rel="manifest" href="manifest.json">
-
 <style>
 body{
-    background: linear-gradient(180deg,#1a002a,#2b0050);
+    margin:0;
+    background: linear-gradient(180deg,#0f001a,#2b0050);
     color:#fff;
     font-family:sans-serif;
-    text-align:center;
 }
 
-#busca{
+/* HEADER */
+header{
+    text-align:center;
+    padding:20px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+/* BUSCA */
+#search{
     width:90%;
-    padding:10px;
-    border-radius:10px;
+    margin:10px auto;
+    display:block;
+    padding:12px;
+    border-radius:20px;
     border:none;
-    margin-bottom:10px;
+    outline:none;
 }
 
 /* LISTA */
+#lista{
+    padding-bottom:140px;
+}
+
 .music{
-    background:#3a0066;
-    margin:10px;
-    padding:10px;
-    border-radius:12px;
-    cursor:pointer;
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:15px;
+    background:#2a004a;
+    margin:10px;
+    padding:12px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.music:hover{
+    background:#3f0070;
+}
+
+.music img{
+    width:50px;
+    height:50px;
+    border-radius:8px;
 }
 
 /* PLAYER */
 .player{
     position:fixed;
     bottom:0;
-    left:0;
-    right:0;
-    background:#2b0050;
-    padding:15px;
+    width:100%;
+    background:#1a0033;
+    padding:10px;
+    text-align:center;
+    z-index:10;
 }
 
+#cover{
+    width:80px;
+    border-radius:10px;
+}
+
+#agora{
+    margin-top:5px;
+    font-size:14px;
+}
+
+/* BARRA */
+.progress{
+    width:90%;
+    height:5px;
+    background:#444;
+    margin:10px auto;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.progress-bar{
+    height:5px;
+    background:#ff4fd8;
+    width:0%;
+    border-radius:5px;
+}
+
+/* CONTROLES */
 .controls{
     display:flex;
     justify-content:center;
-    gap:10px;
+    gap:20px;
     margin-top:10px;
 }
 
 button{
     background:#ff4fd8;
     border:none;
-    padding:10px;
+    padding:10px 15px;
     border-radius:10px;
     color:white;
+    font-size:16px;
     cursor:pointer;
+}
+
+button:hover{
+    background:#ff79f0;
 }
 </style>
 
@@ -67,127 +125,129 @@ button{
 
 <body>
 
-<h2>🎧 MÚSICAS DA RAY</h2>
+<header>🎧 MÚSICAS DA RAY</header>
 
-<input id="busca" placeholder="🔍 Buscar música..." oninput="filtrar()">
+<input id="search" placeholder="🔍 Buscar música...">
 
 <div id="lista"></div>
 
 <div class="player">
-    <img id="capa" width="80" style="border-radius:10px;">
+    <img id="cover" src="">
     <div id="agora">Nenhuma música</div>
 
 ```
-<audio id="audio" controls></audio>
+<div class="progress" onclick="seek(event)">
+    <div class="progress-bar" id="barra"></div>
+</div>
 
 <div class="controls">
     <button onclick="prev()">⏮</button>
-    <button onclick="toggleRepeat()">🔁</button>
+    <button onclick="toggle()">⏯</button>
     <button onclick="next()">⏭</button>
 </div>
 ```
 
 </div>
 
+<audio id="audio"></audio>
+
 <script>
 
 let musicas = [];
-let musicasFiltradas = [];
+let filtradas = [];
 let indexAtual = 0;
-let repetir = false;
 
 const audio = document.getElementById("audio");
+const lista = document.getElementById("lista");
 const agora = document.getElementById("agora");
-const capa = document.getElementById("capa");
+const cover = document.getElementById("cover");
+const barra = document.getElementById("barra");
 
-// BUSCA
-function filtrar(){
-    const termo = document.getElementById("busca").value.toLowerCase();
-    musicasFiltradas = musicas.filter(m => m.nome.toLowerCase().includes(termo));
-    renderLista();
-}
-
-// CAPA AUTOMÁTICA
-async function pegarCapa(nome){
-    try{
-        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(nome)}&limit=1`);
-        const data = await res.json();
-        if(data.results.length > 0){
-            return data.results[0].artworkUrl100;
-        }
-    }catch(e){}
-    return "https://via.placeholder.com/100";
-}
-
-// LISTA
-async function renderLista(){
-    const div = document.getElementById("lista");
-    div.innerHTML = "";
-
-    for(let i=0;i<musicasFiltradas.length;i++){
-        const m = musicasFiltradas[i];
-        const capa = await pegarCapa(m.nome);
-
-        div.innerHTML += `
-        <div class="music" onclick="play(${i})">
-            <img src="${capa}" width="50">
-            ${m.nome}
-        </div>`;
-    }
-}
-
-// CARREGAR
+/* CARREGAR JSON */
 async function carregar(){
-    const res = await fetch("./musicas.json");
+    const res = await fetch("musicas.json");
     musicas = await res.json();
-    musicasFiltradas = musicas;
-    renderLista();
+    filtradas = musicas;
+    render();
 }
 
-// PLAY
+/* CAPA AUTOMÁTICA (rápida) */
+function getCapa(nome){
+    return "https://picsum.photos/200?random=" + nome;
+}
+
+/* LISTA */
+function render(){
+    lista.innerHTML = "";
+
+    filtradas.forEach((m,i)=>{
+        lista.innerHTML += `
+        <div class="music" onclick="play(${i})">
+            <img src="${getCapa(m.nome)}">
+            <div>${m.nome}</div>
+        </div>`;
+    });
+}
+
+/* PLAY */
 function play(i){
     indexAtual = i;
-    const m = musicasFiltradas[i];
+    const m = filtradas[i];
 
     audio.src = m.link;
-    agora.innerText = m.nome;
-
-    pegarCapa(m.nome).then(img=>{
-        capa.src = img;
-    });
-
     audio.play();
+
+    agora.innerText = m.nome;
+    cover.src = getCapa(m.nome);
 }
 
-// CONTROLES
+/* CONTROLES */
+function toggle(){
+    if(audio.paused) audio.play();
+    else audio.pause();
+}
+
 function next(){
-    indexAtual = (indexAtual + 1) % musicasFiltradas.length;
+    indexAtual++;
+    if(indexAtual >= filtradas.length) indexAtual = 0;
     play(indexAtual);
 }
 
 function prev(){
-    indexAtual = (indexAtual - 1 + musicasFiltradas.length) % musicasFiltradas.length;
+    indexAtual--;
+    if(indexAtual < 0) indexAtual = filtradas.length - 1;
     play(indexAtual);
 }
 
-function toggleRepeat(){
-    repetir = !repetir;
-    alert(repetir ? "🔁 Repetindo" : "➡️ Normal");
+/* AUTO NEXT */
+audio.onended = next;
+
+/* PROGRESSO */
+audio.ontimeupdate = ()=>{
+    const p = (audio.currentTime / audio.duration) * 100;
+    barra.style.width = p + "%";
 }
 
-audio.onended = ()=>{
-    repetir ? play(indexAtual) : next();
-};
-
-// SERVICE WORKER
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js");
+/* SEEK */
+function seek(e){
+    const width = e.currentTarget.clientWidth;
+    const click = e.offsetX;
+    audio.currentTime = (click / width) * audio.duration;
 }
 
+/* BUSCA */
+document.getElementById("search").addEventListener("input",(e)=>{
+    const v = e.target.value.toLowerCase();
+    filtradas = musicas.filter(m=>m.nome.toLowerCase().includes(v));
+    render();
+});
+
+/* START */
 carregar();
 
 </script>
 
 </body>
 </html>
+
 

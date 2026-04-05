@@ -8,21 +8,60 @@
 
 <style>
 body{
-    background:#111;
+    background: linear-gradient(180deg,#1a002a,#2b0050);
     color:#fff;
     font-family:sans-serif;
     text-align:center;
 }
 
+/* LISTA */
 .music{
-    background:#222;
+    background:#3a0066;
     margin:10px;
     padding:15px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:0.2s;
+}
+.music:hover{
+    background:#5a00a0;
+}
+
+/* PLAYER FIXO */
+.player{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:#2b0050;
+    padding:15px;
+    box-shadow:0 -2px 10px rgba(0,0,0,0.5);
+}
+
+.controls{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    margin-top:10px;
+}
+
+button{
+    background:#ff4fd8;
+    border:none;
+    padding:10px 15px;
     border-radius:10px;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#ff79f0;
 }
 
 audio{
     width:100%;
+    margin-top:10px;
 }
 </style>
 
@@ -31,30 +70,93 @@ audio{
 <body>
 
 <h2>🎧 Músicas da Rayssa</h2>
+
 <div id="lista"></div>
 
-<script>
-const USER = "felipekoch24";
-const REPO = "MUSICAS_RAYSSA";
+<!-- PLAYER -->
 
+<div class="player">
+    <div id="agora">Nenhuma música</div>
+    <audio id="audio" controls></audio>
+
+```
+<div class="controls">
+    <button onclick="prev()">⏮</button>
+    <button onclick="toggleRepeat()">🔁</button>
+    <button onclick="next()">⏭</button>
+</div>
+```
+
+</div>
+
+<script>
+
+let musicas = [];
+let indexAtual = 0;
+let repetir = false;
+
+const audio = document.getElementById("audio");
+const agora = document.getElementById("agora");
+
+// CARREGAR JSON
 async function carregar(){
-    const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/`);
-    const files = await res.json();
+    const res = await fetch("musicas.json");
+    musicas = await res.json();
 
     const div = document.getElementById("lista");
 
-    files.forEach(f=>{
-        if(f.name.endsWith(".mp3")){
-            div.innerHTML += `
-            <div class="music">
-                <p>${f.name}</p>
-                <audio controls src="${f.download_url}"></audio>
-            </div>`;
-        }
+    musicas.forEach((m,i)=>{
+        div.innerHTML += `
+        <div class="music" onclick="play(${i})">
+            ${m.nome}
+        </div>`;
     });
 }
 
+// TOCAR
+function play(i){
+    indexAtual = i;
+    audio.src = musicas[i].link;
+    agora.innerText = musicas[i].nome;
+
+    audio.play();
+}
+
+// PRÓXIMA
+function next(){
+    indexAtual++;
+    if(indexAtual >= musicas.length){
+        indexAtual = 0;
+    }
+    play(indexAtual);
+}
+
+// ANTERIOR
+function prev(){
+    indexAtual--;
+    if(indexAtual < 0){
+        indexAtual = musicas.length - 1;
+    }
+    play(indexAtual);
+}
+
+// REPETIR
+function toggleRepeat(){
+    repetir = !repetir;
+    alert(repetir ? "🔁 Repetindo música" : "➡️ Sequência normal");
+}
+
+// AUTO PRÓXIMA
+audio.onended = ()=>{
+    if(repetir){
+        play(indexAtual);
+    }else{
+        next();
+    }
+};
+
 carregar();
+
 </script>
 
 </body>

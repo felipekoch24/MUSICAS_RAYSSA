@@ -14,20 +14,17 @@ body{
     text-align:center;
 }
 
-/* LISTA */
 .music{
     background:#3a0066;
     margin:10px;
     padding:15px;
     border-radius:12px;
     cursor:pointer;
-    transition:0.2s;
 }
 .music:hover{
     background:#5a00a0;
 }
 
-/* PLAYER FIXO */
 .player{
     position:fixed;
     bottom:0;
@@ -35,7 +32,6 @@ body{
     right:0;
     background:#2b0050;
     padding:15px;
-    box-shadow:0 -2px 10px rgba(0,0,0,0.5);
 }
 
 .controls{
@@ -55,10 +51,6 @@ button{
     cursor:pointer;
 }
 
-button:hover{
-    background:#ff79f0;
-}
-
 audio{
     width:100%;
     margin-top:10px;
@@ -72,8 +64,6 @@ audio{
 <h2>🎧 MÚSICAS DA RAY</h2>
 
 <div id="lista"></div>
-
-<!-- PLAYER -->
 
 <div class="player">
     <div id="agora">Nenhuma música</div>
@@ -98,72 +88,13 @@ let repetir = false;
 const audio = document.getElementById("audio");
 const agora = document.getElementById("agora");
 
-// CARREGAR JSON
-async function carregar(){
-    const res = await fetch("musicas.json");
-    musicas = await res.json();
-
-    const div = document.getElementById("lista");
-
-    musicas.forEach((m,i)=>{
-        div.innerHTML += `
-        <div class="music" onclick="play(${i})">
-            ${m.nome}
-        </div>`;
-    });
-}
-
-// TOCAR
-function play(i){
-    indexAtual = i;
-    audio.src = musicas[i].link;
-    agora.innerText = musicas[i].nome;
-
-    audio.play();
-}
-
-// PRÓXIMA
-function next(){
-    indexAtual++;
-    if(indexAtual >= musicas.length){
-        indexAtual = 0;
-    }
-    play(indexAtual);
-}
-
-// ANTERIOR
-function prev(){
-    indexAtual--;
-    if(indexAtual < 0){
-        indexAtual = musicas.length - 1;
-    }
-    play(indexAtual);
-}
-
-// REPETIR
-function toggleRepeat(){
-    repetir = !repetir;
-    alert(repetir ? "🔁 Repetindo música" : "➡️ Sequência normal");
-}
-
-// AUTO PRÓXIMA
-audio.onended = ()=>{
-    if(repetir){
-        play(indexAtual);
-    }else{
-        next();
-    }
-};
-
-carregar();
-
-</script>
 async function carregar(){
     try{
         const res = await fetch("./musicas.json");
-        const musicas = await res.json();
+        musicas = await res.json();
 
         const div = document.getElementById("lista");
+        div.innerHTML = "";
 
         musicas.forEach((m,i)=>{
             div.innerHTML += `
@@ -178,11 +109,35 @@ async function carregar(){
     }
 }
 
+function play(i){
+    indexAtual = i;
+    audio.src = musicas[i].link;
+    agora.innerText = musicas[i].nome;
+    audio.play();
+}
+
+function next(){
+    indexAtual = (indexAtual + 1) % musicas.length;
+    play(indexAtual);
+}
+
+function prev(){
+    indexAtual = (indexAtual - 1 + musicas.length) % musicas.length;
+    play(indexAtual);
+}
+
+function toggleRepeat(){
+    repetir = !repetir;
+    alert(repetir ? "🔁 Repetindo" : "➡️ Normal");
+}
+
+audio.onended = ()=>{
+    repetir ? play(indexAtual) : next();
+};
+
 carregar();
+
 </script>
 
 </body>
 </html>
-
-
-

@@ -14,7 +14,6 @@ body{
     font-family:sans-serif;
 }
 
-/* HEADER */
 header{
     text-align:center;
     padding:20px;
@@ -22,7 +21,6 @@ header{
     font-weight:bold;
 }
 
-/* BUSCA */
 #search{
     width:90%;
     margin:10px auto;
@@ -30,12 +28,10 @@ header{
     padding:12px;
     border-radius:20px;
     border:none;
-    outline:none;
 }
 
-/* LISTA */
 #lista{
-    padding-bottom:140px;
+    padding-bottom:160px;
 }
 
 .music{
@@ -47,11 +43,6 @@ header{
     padding:12px;
     border-radius:12px;
     cursor:pointer;
-    transition:0.2s;
-}
-
-.music:hover{
-    background:#3f0070;
 }
 
 .music img{
@@ -72,16 +63,15 @@ header{
 }
 
 #cover{
-    width:80px;
+    width:90px;
     border-radius:10px;
 }
 
 #agora{
-    margin-top:5px;
     font-size:14px;
 }
 
-/* BARRA */
+/* PROGRESSO */
 .progress{
     width:90%;
     height:5px;
@@ -95,14 +85,22 @@ header{
     height:5px;
     background:#ff4fd8;
     width:0%;
-    border-radius:5px;
+}
+
+/* TEMPO */
+.time{
+    font-size:12px;
+    display:flex;
+    justify-content:space-between;
+    width:90%;
+    margin:auto;
 }
 
 /* CONTROLES */
 .controls{
     display:flex;
     justify-content:center;
-    gap:20px;
+    gap:15px;
     margin-top:10px;
 }
 
@@ -112,12 +110,7 @@ button{
     padding:10px 15px;
     border-radius:10px;
     color:white;
-    font-size:16px;
     cursor:pointer;
-}
-
-button:hover{
-    background:#ff79f0;
 }
 </style>
 
@@ -132,10 +125,15 @@ button:hover{
 <div id="lista"></div>
 
 <div class="player">
-    <img id="cover" src="">
+    <img id="cover">
     <div id="agora">Nenhuma música</div>
 
 ```
+<div class="time">
+    <span id="tempoAtual">0:00</span>
+    <span id="tempoTotal">0:00</span>
+</div>
+
 <div class="progress" onclick="seek(event)">
     <div class="progress-bar" id="barra"></div>
 </div>
@@ -144,6 +142,8 @@ button:hover{
     <button onclick="prev()">⏮</button>
     <button onclick="toggle()">⏯</button>
     <button onclick="next()">⏭</button>
+    <button onclick="toggleRepeat()">🔁</button>
+    <button onclick="toggleShuffle()">🔀</button>
 </div>
 ```
 
@@ -156,6 +156,8 @@ button:hover{
 let musicas = [];
 let filtradas = [];
 let indexAtual = 0;
+let repetir = false;
+let shuffle = false;
 
 const audio = document.getElementById("audio");
 const lista = document.getElementById("lista");
@@ -163,34 +165,49 @@ const agora = document.getElementById("agora");
 const cover = document.getElementById("cover");
 const barra = document.getElementById("barra");
 
-/* CARREGAR JSON */
+/* CARREGAR */
 async function carregar(){
     const res = await fetch("musicas.json");
     musicas = await res.json();
     filtradas = musicas;
     render();
+
+    // carregar última música
+    const salvo = localStorage.getItem("musicaAtual");
+    if(salvo){
+        indexAtual = parseInt(salvo);
+        play(indexAtual);
+    }
 }
 
-/* CAPA AUTOMÁTICA (rápida) */
-function getCapa(nome){
-    return "https://picsum.photos/200?random=" + nome;
+/* CAPA REAL (iTunes API - funciona sem chave) */
+async function getCapa(nome){
+    try{
+        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(nome)}&limit=1`);
+        const data = await res.json();
+        return data.results[0]?.artworkUrl100 || "";
+    }catch{
+        return "";
+    }
 }
 
 /* LISTA */
 function render(){
     lista.innerHTML = "";
 
-    filtradas.forEach((m,i)=>{
+    filtradas.forEach(async (m,i)=>{
+        const capa = await getCapa(m.nome);
+
         lista.innerHTML += `
         <div class="music" onclick="play(${i})">
-            <img src="${getCapa(m.nome)}">
+            <img src="${capa}">
             <div>${m.nome}</div>
         </div>`;
     });
 }
 
 /* PLAY */
-function play(i){
+async function play(i){
     indexAtual = i;
     const m = filtradas[i];
 
@@ -198,18 +215,23 @@ function play(i){
     audio.play();
 
     agora.innerText = m.nome;
-    cover.src = getCapa(m.nome);
+    cover.src = await getCapa(m.nome);
+
+    localStorage.setItem("musicaAtual", i);
 }
 
 /* CONTROLES */
 function toggle(){
-    if(audio.paused) audio.play();
-    else audio.pause();
+    audio.paused ? audio.play() : audio.pause();
 }
 
 function next(){
-    indexAtual++;
-    if(indexAtual >= filtradas.length) indexAtual = 0;
+    if(shuffle){
+        indexAtual = Math.floor(Math.random()*filtradas.length);
+    }else{
+        indexAtual++;
+        if(indexAtual >= filtradas.length) indexAtual = 0;
+    }
     play(indexAtual);
 }
 
@@ -219,20 +241,47 @@ function prev(){
     play(indexAtual);
 }
 
-/* AUTO NEXT */
-audio.onended = next;
+/* REPEAT */
+function toggleRepeat(){
+    repetir = !repetir;
+    alert(repetir ? "🔁 Repetindo" : "➡️ Normal");
+}
 
-/* PROGRESSO */
+/* SHUFFLE */
+function toggleShuffle(){
+    shuffle = !shuffle;
+    alert(shuffle ? "🔀 Aleatório ON" : "➡️ Ordem normal");
+}
+
+/* AUTO */
+audio.onended = ()=>{
+    if(repetir) play(indexAtual);
+    else next();
+};
+
+/* TEMPO */
 audio.ontimeupdate = ()=>{
-    const p = (audio.currentTime / audio.duration) * 100;
-    barra.style.width = p + "%";
+    const cur = audio.currentTime;
+    const dur = audio.duration;
+
+    barra.style.width = (cur/dur)*100 + "%";
+
+    document.getElementById("tempoAtual").innerText = format(cur);
+    document.getElementById("tempoTotal").innerText = format(dur);
+};
+
+/* FORMATAR TEMPO */
+function format(t){
+    if(!t) return "0:00";
+    const m = Math.floor(t/60);
+    const s = Math.floor(t%60).toString().padStart(2,"0");
+    return m+":"+s;
 }
 
 /* SEEK */
 function seek(e){
-    const width = e.currentTarget.clientWidth;
-    const click = e.offsetX;
-    audio.currentTime = (click / width) * audio.duration;
+    const w = e.currentTarget.clientWidth;
+    audio.currentTime = (e.offsetX/w)*audio.duration;
 }
 
 /* BUSCA */
@@ -249,5 +298,3 @@ carregar();
 
 </body>
 </html>
-
-

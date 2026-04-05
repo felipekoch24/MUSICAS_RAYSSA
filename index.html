@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Músicas da Rayssa</title>
+<title>MÚSICAS DA RAY</title>
 
 <style>
 body{
@@ -69,7 +69,7 @@ audio{
 
 <body>
 
-<h2>🎧 Músicas da Rayssa</h2>
+<h2>🎧 MÚSICAS DA RAY</h2>
 
 <div id="lista"></div>
 
@@ -157,6 +157,28 @@ audio.onended = ()=>{
 
 carregar();
 
+</script>
+async function carregar(){
+    try{
+        const res = await fetch("./musicas.json");
+        const musicas = await res.json();
+
+        const div = document.getElementById("lista");
+
+        musicas.forEach((m,i)=>{
+            div.innerHTML += `
+            <div class="music" onclick="play(${i})">
+                ${m.nome}
+            </div>`;
+        });
+
+    }catch(e){
+        document.getElementById("lista").innerText = "❌ Erro ao carregar músicas";
+        console.log(e);
+    }
+}
+
+carregar();
 </script>
 
 </body>

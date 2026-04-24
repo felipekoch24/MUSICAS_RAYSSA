@@ -10,10 +10,9 @@ body{
     margin:0;
     color:#fff;
     font-family:sans-serif;
-    overflow-x:hidden;
 }
 
-/* FUNDO COM BLUR */
+/* FUNDO */
 .bg{
     position:fixed;
     width:100%;
@@ -29,15 +28,15 @@ body{
 /* HEADER */
 header{
     text-align:center;
-    padding:15px;
-    font-size:22px;
-    font-weight:bold;
+    padding:10px;
+    font-size:20px;
 }
 
 /* TOTAL */
 #totalMusicas{
     text-align:center;
-    font-size:14px;
+    font-size:13px;
+    opacity:0.8;
 }
 
 /* SEARCH */
@@ -45,26 +44,29 @@ header{
     width:90%;
     margin:10px auto;
     display:block;
-    padding:12px;
+    padding:10px;
     border-radius:20px;
     border:none;
 }
 
 /* LISTA */
+#lista{
+    padding-bottom:180px;
+}
+
 .music{
     display:flex;
     align-items:center;
-    gap:15px;
+    gap:10px;
     background:rgba(0,0,0,0.4);
-    margin:10px;
-    padding:12px;
-    border-radius:12px;
-    cursor:pointer;
+    margin:8px;
+    padding:10px;
+    border-radius:10px;
 }
 
 .music img{
-    width:50px;
-    height:50px;
+    width:45px;
+    height:45px;
     border-radius:8px;
 }
 
@@ -73,35 +75,18 @@ header{
     position:fixed;
     bottom:0;
     width:100%;
-    background:rgba(0,0,0,0.7);
-    padding:15px;
+    background:rgba(0,0,0,0.75);
+    padding:10px;
     text-align:center;
 }
 
-/* CAPA GRANDE */
+/* CAPA */
 #cover{
-    width:200px;
-    height:200px;
+    width:100px;
+    height:100px;
     object-fit:cover;
-    border-radius:15px;
-    display:block;
-    margin:10px auto;
-}
-
-/* PROGRESSO */
-.progress{
-    width:90%;
-    height:5px;
-    background:#444;
-    margin:10px auto;
-    border-radius:5px;
-    cursor:pointer;
-}
-
-.progress-bar{
-    height:5px;
-    background:#ff4fd8;
-    width:0%;
+    border-radius:12px;
+    margin:auto;
 }
 
 /* TEMPO */
@@ -113,21 +98,35 @@ header{
     font-size:12px;
 }
 
+/* PROGRESSO */
+.progress{
+    width:90%;
+    height:5px;
+    background:#444;
+    margin:8px auto;
+    border-radius:5px;
+}
+
+.progress-bar{
+    height:5px;
+    background:#ff4fd8;
+    width:0%;
+}
+
 /* CONTROLES */
 .controls{
     display:flex;
     justify-content:center;
-    gap:10px;
-    margin-top:10px;
+    gap:8px;
 }
 
 button{
     background:#ff4fd8;
     border:none;
-    padding:10px;
+    padding:12px;
     border-radius:10px;
     color:white;
-    cursor:pointer;
+    font-size:16px;
 }
 </style>
 </head>
@@ -136,7 +135,7 @@ button{
 
 <div class="bg" id="bg"></div>
 
-<header>🎧 REPRODUTOR DE MÚSICA</header>
+<header>🎧 REPRODUTOR</header>
 <div id="totalMusicas"></div>
 
 <input id="search" placeholder="🔍 Buscar música...">
@@ -174,6 +173,8 @@ let indexAtual = 0;
 let repetir = false;
 
 const audio = document.getElementById("audio");
+audio.preload = "none"; // 🔥 iPhone fix
+
 const lista = document.getElementById("lista");
 const agora = document.getElementById("agora");
 const cover = document.getElementById("cover");
@@ -194,7 +195,6 @@ async function carregar(){
     document.getElementById("totalMusicas").innerText =
         "🎧 " + musicas.length + " músicas";
 
-    // recuperar última música
     const salvo = localStorage.getItem("musicaIndex");
     const tempo = localStorage.getItem("musicaTempo");
 
@@ -217,7 +217,8 @@ function render(){
     filtradas.forEach((m,i)=>{
         lista.innerHTML += `
         <div class="music" onclick="play(${i})">
-            <img src="${m.capa}" onerror="this.src='${capaPadrao}'">
+            <img src="${m.capa}" loading="lazy"
+            onerror="this.src='${capaPadrao}'">
             <div>${m.nome}</div>
         </div>`;
     });
@@ -229,12 +230,17 @@ function play(i){
     const m = filtradas[i];
 
     audio.src = m.link;
-    audio.play();
+    audio.load();
+
+    const p = audio.play();
+    if(p !== undefined){
+        p.catch(()=>{});
+    }
 
     agora.innerText = m.nome;
 
     cover.src = m.capa;
-    cover.onerror = () => cover.src = capaPadrao;
+    cover.onerror = ()=> cover.src = capaPadrao;
 
     bg.style.backgroundImage = `url('${m.capa}')`;
 
@@ -258,34 +264,28 @@ function prev(){
     play(indexAtual);
 }
 
-/* REPEAT */
 function toggleRepeat(){
     repetir = !repetir;
-    alert(repetir ? "🔁 Repetindo" : "➡️ Normal");
 }
 
 /* AUTO */
 audio.onended = ()=>{
-    if(repetir) play(indexAtual);
-    else next();
+    repetir ? play(indexAtual) : next();
 };
 
-/* TEMPO + SALVAR */
+/* TEMPO */
 audio.ontimeupdate = ()=>{
-    const cur = audio.currentTime;
-    const dur = audio.duration;
+    if(audio.duration){
+        barra.style.width = (audio.currentTime/audio.duration)*100 + "%";
 
-    if(dur){
-        barra.style.width = (cur/dur)*100 + "%";
+        tempoAtual.innerText = format(audio.currentTime);
+        tempoTotal.innerText = format(audio.duration);
 
-        tempoAtual.innerText = format(cur);
-        tempoTotal.innerText = format(dur);
-
-        localStorage.setItem("musicaTempo", cur);
+        localStorage.setItem("musicaTempo", audio.currentTime);
     }
 };
 
-/* FORMATAR */
+/* FORMAT */
 function format(t){
     const m = Math.floor(t/60);
     const s = Math.floor(t%60).toString().padStart(2,"0");

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
@@ -12,7 +13,6 @@ body{
     font-family:sans-serif;
 }
 
-/* FUNDO */
 .bg{
     position:fixed;
     width:100%;
@@ -25,21 +25,18 @@ body{
     z-index:-1;
 }
 
-/* HEADER */
 header{
     text-align:center;
     padding:10px;
     font-size:20px;
 }
 
-/* TOTAL */
 #totalMusicas{
     text-align:center;
     font-size:13px;
     opacity:0.8;
 }
 
-/* SEARCH */
 #search{
     width:90%;
     margin:10px auto;
@@ -49,7 +46,6 @@ header{
     border:none;
 }
 
-/* LISTA */
 #lista{
     padding-bottom:180px;
 }
@@ -71,7 +67,6 @@ header{
     border-radius:8px;
 }
 
-/* PLAYER */
 .player{
     position:fixed;
     bottom:0;
@@ -81,7 +76,6 @@ header{
     text-align:center;
 }
 
-/* CAPA */
 #cover{
     width:100px;
     height:100px;
@@ -90,7 +84,6 @@ header{
     margin:auto;
 }
 
-/* TEMPO */
 .time{
     display:flex;
     justify-content:space-between;
@@ -99,7 +92,6 @@ header{
     font-size:12px;
 }
 
-/* PROGRESSO */
 .progress{
     width:90%;
     height:5px;
@@ -114,7 +106,6 @@ header{
     width:0%;
 }
 
-/* CONTROLES */
 .controls{
     display:flex;
     justify-content:center;
@@ -130,6 +121,7 @@ button{
     font-size:16px;
 }
 </style>
+
 </head>
 
 <body>
@@ -147,24 +139,27 @@ button{
     <img id="cover">
     <div id="agora">Nenhuma música</div>
 
-    <div class="time">
-        <span id="tempoAtual">0:00</span>
-        <span id="tempoTotal">0:00</span>
-    </div>
-
-    <div class="progress" onclick="seek(event)">
-        <div class="progress-bar" id="barra"></div>
-    </div>
-
-    <div class="controls">
-        <button onclick="prev()">⏮</button>
-        <button onclick="toggle()">⏯</button>
-        <button onclick="next()">⏭</button>
-        <button id="btnRepeat" onclick="toggleRepeat()">🔁</button>
-    </div>
+```
+<div class="time">
+    <span id="tempoAtual">0:00</span>
+    <span id="tempoTotal">0:00</span>
 </div>
 
-<audio id="audio"></audio>
+<div class="progress" onclick="seek(event)">
+    <div class="progress-bar" id="barra"></div>
+</div>
+
+<div class="controls">
+    <button onclick="prev()">⏮</button>
+    <button onclick="toggle()">⏯</button>
+    <button onclick="next()">⏭</button>
+    <button id="btnRepeat" onclick="toggleRepeat()">🔁</button>
+</div>
+```
+
+</div>
+
+<audio id="audio" controls preload="none"></audio>
 
 <script>
 
@@ -174,7 +169,6 @@ let indexAtual = 0;
 let repetir = false;
 
 const audio = document.getElementById("audio");
-audio.preload = "none";
 
 const lista = document.getElementById("lista");
 const agora = document.getElementById("agora");
@@ -192,19 +186,12 @@ const capaPadrao = "https://via.placeholder.com/300x300?text=Music";
 async function carregar(){
     const res = await fetch("musicas.json");
     musicas = await res.json();
-    filtradas = musicas;
+    filtradas = [...musicas];
 
     document.getElementById("totalMusicas").innerText =
         "🎧 " + musicas.length + " músicas";
 
-    const salvo = localStorage.getItem("musicaIndex");
-
     render();
-
-    if(salvo){
-        indexAtual = parseInt(salvo);
-        play(indexAtual);
-    }
 }
 
 /* LISTA */
@@ -223,8 +210,10 @@ function render(){
 
 /* PLAY */
 function play(i){
-    indexAtual = i;
-    const m = filtradas[i];
+    const musica = filtradas[i];
+    indexAtual = musicas.indexOf(musica);
+
+    const m = musicas[indexAtual];
 
     audio.pause();
     audio.currentTime = 0;
@@ -232,47 +221,37 @@ function play(i){
     audio.src = m.link;
     audio.load();
 
-    const p = audio.play();
-    if(p !== undefined){
-        p.catch(()=>{});
-    }
+    audio.play().catch(()=>{});
 
-    agora.innerText = m.nome;
+    agora.innerText = "▶ " + m.nome;
 
     cover.src = m.capa;
     cover.onerror = ()=> cover.src = capaPadrao;
 
     bg.style.backgroundImage = `url('${m.capa}')`;
-
-    localStorage.setItem("musicaIndex", i);
 }
 
 /* CONTROLES */
 function toggle(){
-    audio.paused ? audio.play() : audio.pause();
+    audio.paused ? audio.play().catch(()=>{}) : audio.pause();
 }
 
 function next(){
     indexAtual++;
-    if(indexAtual >= filtradas.length) indexAtual = 0;
+    if(indexAtual >= musicas.length) indexAtual = 0;
     play(indexAtual);
 }
 
 function prev(){
     indexAtual--;
-    if(indexAtual < 0) indexAtual = filtradas.length - 1;
+    if(indexAtual < 0) indexAtual = musicas.length - 1;
     play(indexAtual);
 }
 
 /* REPEAT */
 function toggleRepeat(){
     repetir = !repetir;
-
-    if(repetir){
-        btnRepeat.style.background = "#00ff88";
-    }else{
-        btnRepeat.style.background = "#ff4fd8";
-    }
+    btnRepeat.style.background = repetir ? "#00ff88" : "#ff4fd8";
 }
 
 /* AUTO */
@@ -290,7 +269,6 @@ audio.ontimeupdate = ()=>{
     }
 };
 
-/* FORMAT */
 function format(t){
     const m = Math.floor(t/60);
     const s = Math.floor(t%60).toString().padStart(2,"0");

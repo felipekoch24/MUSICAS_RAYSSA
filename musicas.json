@@ -1,36 +1,45 @@
 [
-{
-"nome": "Luan Santana - Olho Marrom",
-"link": "https://www.dropbox.com/scl/fi/fcl8lc47ivqxdc7dk720w/Luan-Santana-OLHO-MARROM-Ao-Vivo-em-Lisboa-MP3_160K.mp3?rlkey=017p87lu0trjklysinyqas5mo&raw=1"
-},
-{
-"nome": "Chefin ft. Oruam - Do Seu Lado",
-"link": "https://www.dropbox.com/scl/fi/yv5kiemzj1wa1zu4wrjvg/Chefin-ft.-Oruam-DO-SEU-LADO-prod.-Ajaxx-MP3_160K.mp3?rlkey=m9f06isypc9w3ku3gr1iejc1t&raw=1"
-},
-{
-"nome": "Cryzin e Kaio Viana - Mas Existe Um Lugar",
-"link": "https://www.dropbox.com/scl/fi/cwmgoywb9cijzp73rx880/Cryzin-e-Kaio-Viana-Mas-Existe-Um-Lugar-Onde-Encontro-Paz-Love-Funk-MP3_160K.mp3?rlkey=5u8lre9dw9qdmuulyfec7emkv&raw=1"
-},
-{
-"nome": "Luan Santana - Dona",
-"link": "https://www.dropbox.com/scl/fi/gzrndmejeu176uvg5gls6/Luan-Santana-DONA-Ao-Vivo-na-Lua.mp3?rlkey=85r7zswud7mxlmhe2ka774oil&raw=1"
-},
-{
-"nome": "Mais Tem Um Amor (Speed Up)",
-"link": "https://www.dropbox.com/scl/fi/gvx65gmijzv699yntqx7h/mais-tem-um-amor--Speed-UP--MP3_160K.mp3?rlkey=a3043r7tlpu5ju3176sehpqou&raw=1"
-},
-{
-"nome": "Luísa Sonza ft. Dilsinho - Ofélia",
-"link": "https://www.dropbox.com/scl/fi/zd6heuw8pdb81hdfqhzze/Of-lia-Lu-sa-Sonza-ft-Dilsinho-todo-tempo-sozinho-nessa-torre_-voc-chamou-meu-nome-MP3_160K.mp3?rlkey=pvw4z7uc6yqkoai1thnx4mgn6&raw=1"
-},
-{
-    "nome": "Kew - Deve ser IA",
-    "link": "https://www.dropbox.com/scl/fi/5cxni992x3dq36d4nrsmk/Kew-Deve-ser-IA-Gilcastro-KEW-192k.mp3?raw=1",
-    "capa": "https://www.dropbox.com/scl/fi/ot4gt1cz025ggz78bhkv6/Kew-Deve-ser-IA-Gilcastro-KEW-192k.jpg?raw=1"
-  },
   {
-    "nome": "PIX ou Presente",
-    "link": "https://www.dropbox.com/scl/fi/9d0uh0mze919bt998m0dg/PIX-OU-PRESENTE-_-J-Vila-Don-Juan-Kelvinho-Ryan-SP-GP-Luuky-e-Magal-Torricelli-e-DJ-Carlinhos.mp3?raw=1",
-    "capa": "https://www.dropbox.com/scl/fi/65e6s2ny70o9q43tdambe/PIX-OU-PRESENTE-_-J-Vila-Don-Juan-Kelvinho-Ryan-SP-GP-Luuky-e-Magal-Torricelli-e-DJ-Carlinhos.jpg?raw=1"
-  }
+    "nome": "Luan Santana - Olho Marrom",
+    "link": "https://www.dropbox.com/scl/fi/fcl8lc47ivqxdc7dk720w/Luan-Santana-OLHO-MARROM-Ao-Vivo-em-Lisboa-MP3_160K.mp3?raw=1",
+    "capa": "OLHO-MARROM.jpg"
+  },
+
+  { "nome": "Adoro Essa Vida", "link": "https://www.dropbox.com/scl/fi/28rfe3mlkrtazmf6ahhpi/ADORO-ESSA-VIDA-Chefin-youtube.mp3?dl=1", "capa": "ADORO-ESSA-VIDA.jpg" },
+
+  { "nome": "Banco do Carona", "link": "https://www.dropbox.com/scl/fi/4967gdafyoupzqg1bmyx7/Banco-do-Carona-Don-Juan-Marks-Joaozinho-VT-Kako-Robs-Gabb-e-Vine-7-GR6-Explode-DJ-Boy-GR6-EXPLODE-youtube.mp3?dl=1", "capa": "BANCO-DO-CARONA.jpg" },
+
+  { "nome": "Céu Azul", "link": "https://www.dropbox.com/scl/fi/5pssuejerbw2hjgla5j6c/Charlie-Brown-Jr-C-u-Azul-Musicalidade-youtube.mp3?dl=1", "capa": "CEU-AZUL.jpg" },
+
+  { "nome": "Dentro da Mala", "link": "https://www.dropbox.com/scl/fi/v6r487wvkjoxszhdvkpxv/DENTRO-DA-MALA-MC-PH-Teto-Pedro-Lotto-Wey-FAIXA-04-MC-PH-youtube.mp3?dl=1", "capa": "DENTRO-DA-MALA.jpg" },
+
+  { "nome": "Filha do Deputado", "link": "https://www.dropbox.com/scl/fi/bc1ogqw5ucl3t45xk65ff/FILHA-DO-DEPUTADO-MC-IG-MC-Ryan-SP-Poze-do-Rodo-e-Oruam-GR6-Explode-DJ-Glenner-e-Daltin-Beat-GR6-EXPLODE-youtube.mp3?dl=1", "capa": "FILHA-DO-DEPUTADO.jpg" },
+
+  { "nome": "Gauchinha", "link": "https://www.dropbox.com/scl/fi/xduwqcbuvb2ecbnvhjod5/Gauchinha-MC-Meno-K-DJ-Japa-NK-Letra-Oficial-Warner-Music-Brasil-youtube.mp3?dl=1", "capa": "GAUCHINHA.jpg" },
+
+  { "nome": "Deve ser IA", "link": "https://www.dropbox.com/scl/fi/5cxni992x3dq36d4nrsmk/Kew-Deve-ser-IA-Gilcastro-KEW-192k.mp3?dl=1", "capa": "DEVE-SER-IA.jpg" },
+
+  { "nome": "Observando Essa Salada", "link": "https://www.dropbox.com/scl/fi/f5qcbdb8fqyr22h4oh822/MC-Cebezinho-Observando-Essa-Salada-DJ-Yuri-Pedrada-MC-Cebezinho-youtube.mp3?dl=1", "capa": "OBSERVANDO-ESSA-SALADA.jpg" },
+
+  { "nome": "300 no 7", "link": "https://www.dropbox.com/scl/fi/ffb5gqqawie515i4ryrtx/MC-GP-MC-J-VILA-MC-LUUKY-300-no-7-DJ-YURI-PEDRADA-VIDEOCLIPE-OFICIAL-ativei-o-modo-esquece-MC-GP-youtube.mp3?dl=1", "capa": "300-NO-7.jpg" },
+
+  { "nome": "Eu Até Gosto de Você", "link": "https://www.dropbox.com/scl/fi/k39c37s4259zxax9rhflf/MC-JACAR-MC-NEG-O-ORIGINAL-DJ-JAPA-NK-EU-AT-GOSTO-DE-VOC-Clipe-Oficial-MC-Jacar-youtube.mp3?dl=1", "capa": "EU-ATE-GOSTO-DE-VOCE.jpg" },
+
+  { "nome": "De Uns Dias Pra Cá", "link": "https://www.dropbox.com/scl/fi/ay1mk7hx8t7j5rv3n80bw/MC-Luuky-De-uns-Dias-pra-Ca-Clipe-Oficial-DJ-GM-MC-Luuky-youtube.mp3?dl=1", "capa": "DE-UNS-DIAS-PRA-CA.jpg" },
+
+  { "nome": "Medley de Igaratá 3", "link": "https://www.dropbox.com/scl/fi/w2qn03mjptwklw9ujolll/MEDLEY-DE-IGARAT-3-MC-Neg-o-Original-DJ-Guh-Mix-e-DJ-Japa-NK-BG-LOVE-FUNK-youtube.mp3?dl=1", "capa": "MEDLEY-DE-IGARATA-3.jpg" },
+
+  { "nome": "PIX ou Presente", "link": "https://www.dropbox.com/scl/fi/9d0uh0mze919bt998m0dg/PIX-OU-PRESENTE-_-J-Vila-Don-Juan-Kelvinho-Ryan-SP-GP-Luuky-e-Magal-Torricelli-e-DJ-Carlinhos.mp3?dl=1", "capa": "PIX-OU-PRESENTE.jpg" },
+
+  { "nome": "Puta é Só Um Detalhe", "link": "https://www.dropbox.com/scl/fi/0i3uulqn6no9yaz7jjcc1/PUTA-S-UM-DETALHE-Clipe-Oficial-MC-Torugo-DJ-Douglinhas-e-DJ-Miller-Funk-24por48-youtube.mp3?dl=1", "capa": "PUTA-E-SO-UM-DETALHE.jpg" },
+
+  { "nome": "Sem Preocupação", "link": "https://www.dropbox.com/scl/fi/9pmnvny8f7v30xhp8wzil/Sem-Preocupa-o-Eu-Toco-a-Meca-MC-PH-VideoClipe-MC-PH-youtube.mp3?dl=1", "capa": "SEM-PREOCUPACAO.jpg" },
+
+  { "nome": "Tóxica Só Que Vicia", "link": "https://www.dropbox.com/scl/fi/yy1woesx1v44cxhmf4wpn/Thiago-Kelbert-Cjota-Cave-T-xica-s-que-v-cia-Prod.Celo-Thiago-MC-youtube.mp3?dl=1", "capa": "TOXICA-SO-QUE-VICIA.jpg" },
+
+  { "nome": "Furacão de Ninar", "link": "https://www.dropbox.com/scl/fi/d77c0k80epepvlotzsma1/Tribo-da-Periferia-Furac-o-de-Ninar-Official-Music-Visualizer-duckjayreal-Tribo-da-Periferia-youtube.mp3?dl=1", "capa": "FURACAO-DE-NINAR.jpg" },
+
+  { "nome": "Artista Genérico", "link": "https://www.dropbox.com/scl/fi/7976s2cesu3g3925ciats/VEIGH-Artista-Gen-rico-Clipe-Oficial-Eu-Venci-o-Mundo-VEIGH-youtube.mp3?dl=1", "capa": "ARTISTA-GENERICO.jpg" },
+
+  { "nome": "Vem Desestressar", "link": "https://www.dropbox.com/scl/fi/mwvzr1s03vtzem0m05ggp/Vem-Desestressar-MC-PH-Vulgo-FK-Veigh-Video-Clipe-OCDM-2-MC-PH-youtube.mp3?dl=1", "capa": "VEM-DESESTRESSAR.jpg" }
 ]

@@ -132,6 +132,16 @@ const agora = document.getElementById("agora");
 const cover = document.getElementById("cover");
 const barra = document.getElementById("barra");
 
+// TEMPO
+const tempoAtual = document.createElement("div");
+const tempoTotal = document.createElement("div");
+
+tempoAtual.style.fontSize = "12px";
+tempoTotal.style.fontSize = "12px";
+
+document.querySelector(".player").appendChild(tempoAtual);
+document.querySelector(".player").appendChild(tempoTotal);
+
 // imagem padrão
 const capaPadrao = "https://via.placeholder.com/300x300?text=Music";
 
@@ -150,7 +160,7 @@ function render(){
     filtradas.forEach((m,i)=>{
         lista.innerHTML += `
         <div class="music" onclick="play(${i})">
-            <img src="${capaPadrao}">
+            <img src="${m.capa}" onerror="this.src='${capaPadrao}'">
             <div>${m.nome}</div>
         </div>`;
     });
@@ -166,7 +176,9 @@ function play(i){
     audio.play();
 
     agora.innerText = m.nome;
-    cover.src = capaPadrao;
+
+    cover.src = m.capa;
+    cover.onerror = () => cover.src = capaPadrao;
 }
 
 /* CONTROLES */
@@ -194,19 +206,29 @@ function toggleRepeat(){
 
 /* AUTO */
 audio.onended = ()=>{
-    if(repetir){
-        play(indexAtual);
-    } else {
-        next();
-    }
+    if(repetir) play(indexAtual);
+    else next();
 };
 
-/* PROGRESSO */
+/* PROGRESSO + TEMPO */
 audio.ontimeupdate = ()=>{
     const cur = audio.currentTime;
     const dur = audio.duration;
-    barra.style.width = (cur/dur)*100 + "%";
+
+    if(dur){
+        barra.style.width = (cur/dur)*100 + "%";
+
+        tempoAtual.innerText = format(cur);
+        tempoTotal.innerText = format(dur);
+    }
 };
+
+/* FORMATAR TEMPO */
+function format(t){
+    const m = Math.floor(t/60);
+    const s = Math.floor(t%60).toString().padStart(2,"0");
+    return m + ":" + s;
+}
 
 /* SEEK */
 function seek(e){

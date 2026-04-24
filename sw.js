@@ -1,14 +1,12 @@
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
 
-  // 🔥 ignora tudo que não é do teu site
-  if (url.origin !== location.origin) {
+  // NÃO INTERCEPTA músicas externas
+  if (url.hostname.includes("dropboxusercontent.com")) {
     return;
   }
 
   e.respondWith(
-    caches.match(e.request).then(res => {
-      return res || fetch(e.request);
-    })
+    caches.match(e.request).then(res => res || fetch(e.request))
   );
 });

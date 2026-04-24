@@ -79,6 +79,7 @@ header{
     display:flex;
     justify-content:center;
     gap:10px;
+    margin-top:10px;
 }
 
 button{
@@ -112,6 +113,7 @@ button{
         <button onclick="prev()">⏮</button>
         <button onclick="toggle()">⏯</button>
         <button onclick="next()">⏭</button>
+        <button onclick="toggleRepeat()">🔁</button>
     </div>
 </div>
 
@@ -122,6 +124,7 @@ button{
 let musicas = [];
 let filtradas = [];
 let indexAtual = 0;
+let repetir = false;
 
 const audio = document.getElementById("audio");
 const lista = document.getElementById("lista");
@@ -129,6 +132,10 @@ const agora = document.getElementById("agora");
 const cover = document.getElementById("cover");
 const barra = document.getElementById("barra");
 
+// imagem padrão
+const capaPadrao = "https://via.placeholder.com/300x300?text=Music";
+
+/* CARREGAR */
 async function carregar(){
     const res = await fetch("musicas.json");
     musicas = await res.json();
@@ -136,29 +143,33 @@ async function carregar(){
     render();
 }
 
+/* LISTA */
 function render(){
     lista.innerHTML = "";
 
     filtradas.forEach((m,i)=>{
         lista.innerHTML += `
         <div class="music" onclick="play(${i})">
-            <img src="${m.capa || ''}">
+            <img src="${capaPadrao}">
             <div>${m.nome}</div>
         </div>`;
     });
 }
 
+/* PLAY */
 function play(i){
     indexAtual = i;
     const m = filtradas[i];
 
     audio.src = m.link;
+    audio.load();
     audio.play();
 
     agora.innerText = m.nome;
-    cover.src = m.capa || "";
+    cover.src = capaPadrao;
 }
 
+/* CONTROLES */
 function toggle(){
     audio.paused ? audio.play() : audio.pause();
 }
@@ -175,23 +186,42 @@ function prev(){
     play(indexAtual);
 }
 
+/* REPEAT */
+function toggleRepeat(){
+    repetir = !repetir;
+    alert(repetir ? "🔁 Repetindo" : "➡️ Normal");
+}
+
+/* AUTO */
+audio.onended = ()=>{
+    if(repetir){
+        play(indexAtual);
+    } else {
+        next();
+    }
+};
+
+/* PROGRESSO */
 audio.ontimeupdate = ()=>{
     const cur = audio.currentTime;
     const dur = audio.duration;
     barra.style.width = (cur/dur)*100 + "%";
 };
 
+/* SEEK */
 function seek(e){
     const w = e.currentTarget.clientWidth;
     audio.currentTime = (e.offsetX/w)*audio.duration;
 }
 
+/* BUSCA */
 document.getElementById("search").addEventListener("input",(e)=>{
     const v = e.target.value.toLowerCase();
     filtradas = musicas.filter(m=>m.nome.toLowerCase().includes(v));
     render();
 });
 
+/* START */
 carregar();
 
 </script>

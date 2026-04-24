@@ -8,18 +8,39 @@
 <style>
 body{
     margin:0;
-    background: linear-gradient(180deg,#0f001a,#2b0050);
     color:#fff;
     font-family:sans-serif;
+    overflow-x:hidden;
 }
 
+/* FUNDO COM BLUR */
+.bg{
+    position:fixed;
+    width:100%;
+    height:100%;
+    top:0;
+    left:0;
+    background-size:cover;
+    background-position:center;
+    filter: blur(25px) brightness(0.4);
+    z-index:-1;
+}
+
+/* HEADER */
 header{
     text-align:center;
-    padding:20px;
+    padding:15px;
     font-size:22px;
     font-weight:bold;
 }
 
+/* TOTAL */
+#totalMusicas{
+    text-align:center;
+    font-size:14px;
+}
+
+/* SEARCH */
 #search{
     width:90%;
     margin:10px auto;
@@ -29,11 +50,12 @@ header{
     border:none;
 }
 
+/* LISTA */
 .music{
     display:flex;
     align-items:center;
     gap:15px;
-    background:#2a004a;
+    background:rgba(0,0,0,0.4);
     margin:10px;
     padding:12px;
     border-radius:12px;
@@ -46,20 +68,27 @@ header{
     border-radius:8px;
 }
 
+/* PLAYER */
 .player{
     position:fixed;
     bottom:0;
     width:100%;
-    background:#1a0033;
-    padding:10px;
+    background:rgba(0,0,0,0.7);
+    padding:15px;
     text-align:center;
 }
 
+/* CAPA GRANDE */
 #cover{
-    width:90px;
-    border-radius:10px;
+    width:200px;
+    height:200px;
+    object-fit:cover;
+    border-radius:15px;
+    display:block;
+    margin:10px auto;
 }
 
+/* PROGRESSO */
 .progress{
     width:90%;
     height:5px;
@@ -75,6 +104,16 @@ header{
     width:0%;
 }
 
+/* TEMPO */
+.time{
+    display:flex;
+    justify-content:space-between;
+    width:90%;
+    margin:auto;
+    font-size:12px;
+}
+
+/* CONTROLES */
 .controls{
     display:flex;
     justify-content:center;
@@ -95,7 +134,10 @@ button{
 
 <body>
 
+<div class="bg" id="bg"></div>
+
 <header>🎧 REPRODUTOR DE MÚSICA</header>
+<div id="totalMusicas"></div>
 
 <input id="search" placeholder="🔍 Buscar música...">
 
@@ -104,6 +146,11 @@ button{
 <div class="player">
     <img id="cover">
     <div id="agora">Nenhuma música</div>
+
+    <div class="time">
+        <span id="tempoAtual">0:00</span>
+        <span id="tempoTotal">0:00</span>
+    </div>
 
     <div class="progress" onclick="seek(event)">
         <div class="progress-bar" id="barra"></div>
@@ -131,18 +178,11 @@ const lista = document.getElementById("lista");
 const agora = document.getElementById("agora");
 const cover = document.getElementById("cover");
 const barra = document.getElementById("barra");
+const bg = document.getElementById("bg");
 
-// TEMPO
-const tempoAtual = document.createElement("div");
-const tempoTotal = document.createElement("div");
+const tempoAtual = document.getElementById("tempoAtual");
+const tempoTotal = document.getElementById("tempoTotal");
 
-tempoAtual.style.fontSize = "12px";
-tempoTotal.style.fontSize = "12px";
-
-document.querySelector(".player").appendChild(tempoAtual);
-document.querySelector(".player").appendChild(tempoTotal);
-
-// imagem padrão
 const capaPadrao = "https://via.placeholder.com/300x300?text=Music";
 
 /* CARREGAR */
@@ -150,7 +190,24 @@ async function carregar(){
     const res = await fetch("musicas.json");
     musicas = await res.json();
     filtradas = musicas;
+
+    document.getElementById("totalMusicas").innerText =
+        "🎧 " + musicas.length + " músicas";
+
+    // recuperar última música
+    const salvo = localStorage.getItem("musicaIndex");
+    const tempo = localStorage.getItem("musicaTempo");
+
     render();
+
+    if(salvo){
+        indexAtual = parseInt(salvo);
+        play(indexAtual);
+
+        if(tempo){
+            audio.currentTime = tempo;
+        }
+    }
 }
 
 /* LISTA */
@@ -172,13 +229,16 @@ function play(i){
     const m = filtradas[i];
 
     audio.src = m.link;
-    audio.load();
     audio.play();
 
     agora.innerText = m.nome;
 
     cover.src = m.capa;
     cover.onerror = () => cover.src = capaPadrao;
+
+    bg.style.backgroundImage = `url('${m.capa}')`;
+
+    localStorage.setItem("musicaIndex", i);
 }
 
 /* CONTROLES */
@@ -210,7 +270,7 @@ audio.onended = ()=>{
     else next();
 };
 
-/* PROGRESSO + TEMPO */
+/* TEMPO + SALVAR */
 audio.ontimeupdate = ()=>{
     const cur = audio.currentTime;
     const dur = audio.duration;
@@ -220,14 +280,16 @@ audio.ontimeupdate = ()=>{
 
         tempoAtual.innerText = format(cur);
         tempoTotal.innerText = format(dur);
+
+        localStorage.setItem("musicaTempo", cur);
     }
 };
 
-/* FORMATAR TEMPO */
+/* FORMATAR */
 function format(t){
     const m = Math.floor(t/60);
     const s = Math.floor(t%60).toString().padStart(2,"0");
-    return m + ":" + s;
+    return m+":"+s;
 }
 
 /* SEEK */

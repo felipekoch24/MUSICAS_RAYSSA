@@ -1,9 +1,6 @@
 self.addEventListener("fetch", e => {
-  const url = new URL(e.request.url);
-
-  // NÃO INTERCEPTA músicas externas
-  if (url.hostname.includes("dropboxusercontent.com")) {
-    return;
+  if(e.request.url.includes(".mp3")){
+    return; // NÃO CACHEIA AUDIO
   }
 
   e.respondWith(

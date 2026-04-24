@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MÚSICAS DA RAY</title>
+<title>REPRODUTOR DE MÚSICA</title>
 
 <style>
 body{
@@ -30,10 +29,6 @@ header{
     border:none;
 }
 
-#lista{
-    padding-bottom:160px;
-}
-
 .music{
     display:flex;
     align-items:center;
@@ -51,7 +46,6 @@ header{
     border-radius:8px;
 }
 
-/* PLAYER */
 .player{
     position:fixed;
     bottom:0;
@@ -59,7 +53,6 @@ header{
     background:#1a0033;
     padding:10px;
     text-align:center;
-    z-index:10;
 }
 
 #cover{
@@ -67,11 +60,6 @@ header{
     border-radius:10px;
 }
 
-#agora{
-    font-size:14px;
-}
-
-/* PROGRESSO */
 .progress{
     width:90%;
     height:5px;
@@ -87,38 +75,26 @@ header{
     width:0%;
 }
 
-/* TEMPO */
-.time{
-    font-size:12px;
-    display:flex;
-    justify-content:space-between;
-    width:90%;
-    margin:auto;
-}
-
-/* CONTROLES */
 .controls{
     display:flex;
     justify-content:center;
-    gap:15px;
-    margin-top:10px;
+    gap:10px;
 }
 
 button{
     background:#ff4fd8;
     border:none;
-    padding:10px 15px;
+    padding:10px;
     border-radius:10px;
     color:white;
     cursor:pointer;
 }
 </style>
-
 </head>
 
 <body>
 
-<header>🎧 MÚSICAS DA RAY</header>
+<header>🎧 REPRODUTOR DE MÚSICA</header>
 
 <input id="search" placeholder="🔍 Buscar música...">
 
@@ -128,25 +104,15 @@ button{
     <img id="cover">
     <div id="agora">Nenhuma música</div>
 
-```
-<div class="time">
-    <span id="tempoAtual">0:00</span>
-    <span id="tempoTotal">0:00</span>
-</div>
+    <div class="progress" onclick="seek(event)">
+        <div class="progress-bar" id="barra"></div>
+    </div>
 
-<div class="progress" onclick="seek(event)">
-    <div class="progress-bar" id="barra"></div>
-</div>
-
-<div class="controls">
-    <button onclick="prev()">⏮</button>
-    <button onclick="toggle()">⏯</button>
-    <button onclick="next()">⏭</button>
-    <button onclick="toggleRepeat()">🔁</button>
-    <button onclick="toggleShuffle()">🔀</button>
-</div>
-```
-
+    <div class="controls">
+        <button onclick="prev()">⏮</button>
+        <button onclick="toggle()">⏯</button>
+        <button onclick="next()">⏭</button>
+    </div>
 </div>
 
 <audio id="audio"></audio>
@@ -156,8 +122,6 @@ button{
 let musicas = [];
 let filtradas = [];
 let indexAtual = 0;
-let repetir = false;
-let shuffle = false;
 
 const audio = document.getElementById("audio");
 const lista = document.getElementById("lista");
@@ -165,49 +129,26 @@ const agora = document.getElementById("agora");
 const cover = document.getElementById("cover");
 const barra = document.getElementById("barra");
 
-/* CARREGAR */
 async function carregar(){
     const res = await fetch("musicas.json");
     musicas = await res.json();
     filtradas = musicas;
     render();
-
-    // carregar última música
-    const salvo = localStorage.getItem("musicaAtual");
-    if(salvo){
-        indexAtual = parseInt(salvo);
-        play(indexAtual);
-    }
 }
 
-/* CAPA REAL (iTunes API - funciona sem chave) */
-async function getCapa(nome){
-    try{
-        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(nome)}&limit=1`);
-        const data = await res.json();
-        return data.results[0]?.artworkUrl100 || "";
-    }catch{
-        return "";
-    }
-}
-
-/* LISTA */
 function render(){
     lista.innerHTML = "";
 
-    filtradas.forEach(async (m,i)=>{
-        const capa = await getCapa(m.nome);
-
+    filtradas.forEach((m,i)=>{
         lista.innerHTML += `
         <div class="music" onclick="play(${i})">
-            <img src="${capa}">
+            <img src="${m.capa || ''}">
             <div>${m.nome}</div>
         </div>`;
     });
 }
 
-/* PLAY */
-async function play(i){
+function play(i){
     indexAtual = i;
     const m = filtradas[i];
 
@@ -215,23 +156,16 @@ async function play(i){
     audio.play();
 
     agora.innerText = m.nome;
-    cover.src = await getCapa(m.nome);
-
-    localStorage.setItem("musicaAtual", i);
+    cover.src = m.capa || "";
 }
 
-/* CONTROLES */
 function toggle(){
     audio.paused ? audio.play() : audio.pause();
 }
 
 function next(){
-    if(shuffle){
-        indexAtual = Math.floor(Math.random()*filtradas.length);
-    }else{
-        indexAtual++;
-        if(indexAtual >= filtradas.length) indexAtual = 0;
-    }
+    indexAtual++;
+    if(indexAtual >= filtradas.length) indexAtual = 0;
     play(indexAtual);
 }
 
@@ -241,57 +175,23 @@ function prev(){
     play(indexAtual);
 }
 
-/* REPEAT */
-function toggleRepeat(){
-    repetir = !repetir;
-    alert(repetir ? "🔁 Repetindo" : "➡️ Normal");
-}
-
-/* SHUFFLE */
-function toggleShuffle(){
-    shuffle = !shuffle;
-    alert(shuffle ? "🔀 Aleatório ON" : "➡️ Ordem normal");
-}
-
-/* AUTO */
-audio.onended = ()=>{
-    if(repetir) play(indexAtual);
-    else next();
-};
-
-/* TEMPO */
 audio.ontimeupdate = ()=>{
     const cur = audio.currentTime;
     const dur = audio.duration;
-
     barra.style.width = (cur/dur)*100 + "%";
-
-    document.getElementById("tempoAtual").innerText = format(cur);
-    document.getElementById("tempoTotal").innerText = format(dur);
 };
 
-/* FORMATAR TEMPO */
-function format(t){
-    if(!t) return "0:00";
-    const m = Math.floor(t/60);
-    const s = Math.floor(t%60).toString().padStart(2,"0");
-    return m+":"+s;
-}
-
-/* SEEK */
 function seek(e){
     const w = e.currentTarget.clientWidth;
     audio.currentTime = (e.offsetX/w)*audio.duration;
 }
 
-/* BUSCA */
 document.getElementById("search").addEventListener("input",(e)=>{
     const v = e.target.value.toLowerCase();
     filtradas = musicas.filter(m=>m.nome.toLowerCase().includes(v));
     render();
 });
 
-/* START */
 carregar();
 
 </script>

@@ -19,6 +19,16 @@
     .progress-bar { height:5px; background:#ff4fd8; width:0%; }
     .controls { display:flex; justify-content:center; gap:15px; margin-top:10px; }
     button { background:#ff4fd8; border:none; padding:12px; border-radius:10px; color:white; font-size:16px; cursor:pointer; }
+    /* Se tiver algo como #btnRepeat, mude para: */
+.btnRepeat {
+    background: #ff4fd8;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
     
     /* TELA DE MÚSICA */
     #telaMusica { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
@@ -44,7 +54,7 @@
         <button onclick="event.stopPropagation(); prev()">⏮</button>
         <button onclick="event.stopPropagation(); toggle()">⏯</button>
         <button onclick="event.stopPropagation(); next()">⏭</button>
-        <button id="btnRepeat" onclick="event.stopPropagation(); toggleRepeat()">🔁</button>
+        <button class="btnRepeat" onclick="toggleRepeat()">🔁</button>
     </div>
 </div>
 
@@ -52,16 +62,24 @@
     <div class="btnFechar" onclick="fecharTela()">✖</div>
     <img id="coverTela">
     <div id="legendaTela">Aguardando música...</div>
+    
+    <div class="controls">
+        <button onclick="prev()">⏮</button>
+        <button onclick="toggle()">⏯</button>
+        <button onclick="next()">⏭</button>
+        <button class="btnRepeat" onclick="toggleRepeat()">🔁</button>
+    </div>
 </div>
 
 <audio id="audio" preload="none"></audio>
 
 <script>
     let musicas = [], filtradas = [], indexAtual = 0, repetir = false, letras = [];
+    //CONSTANTES//
     const audio = document.getElementById("audio"), lista = document.getElementById("lista"), agora = document.getElementById("agora");
-    const barra = document.getElementById("barra"), bg = document.getElementById("bg"), btnRepeat = document.getElementById("btnRepeat");
-    const telaMusica = document.getElementById("telaMusica"), legendaTela = document.getElementById("legendaTela"), coverTela = document.getElementById("coverTela");
-
+const barra = document.getElementById("barra"), bg = document.getElementById("bg");
+const telaMusica = document.getElementById("telaMusica"), legendaTela = document.getElementById("legendaTela"), coverTela = document.getElementById("coverTela")
+   //FUNÇÃO CARREGAR//
     async function carregar(){
         try {
             const res = await fetch("musicas.json");
@@ -71,14 +89,15 @@
             render();
         } catch(e) { console.log("Erro ao carregar"); }
     }
-
+//FUNÇÃO RENDERIZAR//
     function render(){
         lista.innerHTML = "";
         filtradas.forEach((m,i)=>{
-            lista.innerHTML += `<div class="music" onclick="play(${i})"><img src="${m.capa}"><div>${m.nome}</div></div>`;
+            lista.innerHTML += `<div class="music" onclick="play(${i})"><img src="${m.capa}"><div>${m.nome}</div></div>`; //CONSTRUTOR DA VITRINE//
         });
     }
-
+// FUNÇÃO PLAYER//
+    // --- CARREGA A LISTA DE MÚSICAS DO JSON ---
     async function play(i){
         const m = filtradas[i];
         indexAtual = musicas.indexOf(m);
@@ -92,12 +111,13 @@
         legendaTela.innerText = "Carregando letra...";
         if (m.legenda) {
             try {
-                const res = await fetch(`https://raw.githubusercontent.com/felipekoch24/MUSICAS_RAYSSA/main/${m.legenda}.lrc`);
+                const res = await fetch(`https://raw.githubusercontent.com/felipekoch24/MUSICAS_RAYSSA/main/${m.legenda}.lrc`); // FETCH É O MENSAGEIRO//
                 letras = parseLRC(await res.text());
             } catch(e) { legendaTela.innerText = "Sem legenda."; }
         }
     }
-
+// FUNÇÃO DO TRADUTOR//
+    // --- TRADUZ O ARQUIVO .LRC PARA UM FORMATO QUE O JS ENTENDA (TEMPO E TEXTO) ---
     function parseLRC(text) {
         return text.split('\n').map(line => {
             const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
@@ -105,7 +125,7 @@
             return { time: parseInt(match[1])*60 + parseFloat(match[2]), text: match[3] };
         }).filter(l => l);
     }
-
+// FUNÇÃO DO FISCAL GERAL (ONTIMEUPDATE) // --- ATUALIZA A TELA E A LEGENDA A CADA MILISSEGUNDO DA MÚSICA ---//
     audio.ontimeupdate = () => {
         if(audio.duration) barra.style.width = (audio.currentTime/audio.duration)*100 + "%";
         if(letras.length > 0) {
@@ -114,17 +134,26 @@
         }
     };
 
-    function fecharTela() { telaMusica.style.display = "none"; }
-    function toggle() { audio.paused ? audio.play() : audio.pause(); }
-    function next() { indexAtual = (indexAtual + 1) % musicas.length; play(indexAtual); }
-    function prev() { indexAtual = (indexAtual - 1 + musicas.length) % musicas.length; play(indexAtual); }
-    function toggleRepeat() { repetir = !repetir; btnRepeat.style.background = repetir ? "#00ff88" : "#ff4fd8"; }
-    function seek(e) { const w = e.currentTarget.clientWidth; audio.currentTime = (e.offsetX/w)*audio.duration; }
+    function fecharTela() { telaMusica.style.display = "none"; } //FECHAR TELA//
+    function toggle() { audio.paused ? audio.play() : audio.pause(); } // FUNÇÃO PLAY/PAUSE //
+    function next() { indexAtual = (indexAtual + 1) % musicas.length; play(indexAtual); } // --- PULA PARA A PRÓXIMA MÚSICA DA LISTA ---
+    function prev() { indexAtual = (indexAtual - 1 + musicas.length) % musicas.length; play(indexAtual); } // --- VOLTA PARA A MÚSICA ANTERIOR DA LISTA ---
+    function seek(e) { const w = e.currentTarget.clientWidth; audio.currentTime = (e.offsetX/w)*audio.duration; } // --- NAVEGAÇÃO: Pula para uma parte específica da música ao clicar na barra ---
     audio.onended = () => { repetir ? play(indexAtual) : next(); };
     document.getElementById("search").addEventListener("input", (e) => {
         filtradas = musicas.filter(m => m.nome.toLowerCase().includes(e.target.value.toLowerCase()));
         render();
     });
+    //FUNÇÃO QUE FUNCIONA O REPETIR//
+    function toggleRepeat() {
+    repetir = !repetir;
+    // Pega todos os botões que têm a classe 'btnRepeat'
+    const botoes = document.querySelectorAll('.btnRepeat');
+    // Aplica a cor em todos eles
+    botoes.forEach(btn => {
+        btn.style.background = repetir ? "#00ff88" : "#ff4fd8";
+    });
+}
 
     carregar();
 </script>

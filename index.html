@@ -126,10 +126,10 @@ button{
 
 <div class="bg" id="bg"></div>
 
-<header>🎧 REPRODUTOR</header>
+<header>🎧 REPRODUTOR RAYSSA</header>
 <div id="totalMusicas"></div>
 
-<input id="search" placeholder="🔍 Buscar música...">
+<input id="search" placeholder="🔍 BUSCAR MÚSICA...">
 
 <div id="lista"></div>
 
@@ -144,6 +144,7 @@ button{
 
     <div class="progress" onclick="seek(event)">
         <div class="progress-bar" id="barra"></div>
+        <div id="legenda" style="margin: 10px; font-size: 14px; min-height: 20px; color: #ff4fd8;"></div>
     </div>
 
     <div class="controls">
@@ -176,6 +177,14 @@ const tempoAtual = document.getElementById("tempoAtual");
 const tempoTotal = document.getElementById("tempoTotal");
 
 const capaPadrao = "https://via.placeholder.com/300x300?text=Music";
+   
+// Agora você usa esse link no fetch
+fetch(linkLegenda)
+  .then(response => response.text())
+  .then(textoLRC => {
+     // Aqui entra a lógica para processar o texto do .lrc
+     console.log("Legenda carregada:", textoLRC);
+  });
 
 /* CARREGAR */
 async function carregar(){
@@ -208,26 +217,57 @@ function render(){
 }
 
 /* PLAY */
-function play(i){
+/* VARIÁVEL GLOBAL PARA A LEGENDA */
+let letras = []; 
+
+async function play(i){
     const musica = filtradas[i];
     indexAtual = musicas.indexOf(musica);
-
     const m = musicas[indexAtual];
 
     audio.pause();
     audio.currentTime = 0;
-
     audio.src = m.link;
-
     audio.play().catch(()=>{});
 
     agora.innerText = "▶ " + m.nome;
-
     cover.src = m.capa;
-    cover.onerror = ()=> cover.src = capaPadrao;
-
     bg.style.backgroundImage = `url('${m.capa}')`;
+
+    // --- NOVA LÓGICA DE LEGENDA ---
+    document.getElementById("legenda").innerText = "CARREGANDO LETRA...";
+    try {
+        // Supondo que no seu JSON você tenha o nome do arquivo em 'm.id'
+        const res = await fetch(`https://raw.githubusercontent.com/felipekoch24/MUSICAS_RAYSSA/main/${m.id}.lrc`);
+        const text = await res.text();
+        letras = parseLRC(text);
+        document.getElementById("legenda").innerText = "";
+    } catch(e) {
+        document.getElementById("legenda").innerText = "";
+    }
 }
+
+/* LEITOR DE LRC */
+function parseLRC(text) {
+    return text.split('\n').map(line => {
+        const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
+        if (!match) return null;
+        return { time: parseInt(match[1])*60 + parseFloat(match[2]), text: match[3] };
+    }).filter(l => l);
+}
+
+/* ATUALIZAR LEGENDA NO TIMEUPDATE */
+audio.ontimeupdate = ()=>{
+    if(audio.duration){
+        barra.style.width = (audio.currentTime/audio.duration)*100 + "%";
+        tempoAtual.innerText = format(audio.currentTime);
+        tempoTotal.innerText = format(audio.duration);
+
+        // Lógica da legenda
+        const currentLine = letras.filter(l => l.time <= audio.currentTime).pop();
+        if (currentLine) document.getElementById("legenda").innerText = currentLine.text;
+    }
+};
 
 /* CONTROLES */
 function toggle(){

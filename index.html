@@ -158,33 +158,24 @@ button{
 <audio id="audio" preload="none"></audio>
 
 <script>
-
 let musicas = [];
 let filtradas = [];
 let indexAtual = 0;
 let repetir = false;
+let letras = []; // Variável global para a legenda
 
 const audio = document.getElementById("audio");
-
 const lista = document.getElementById("lista");
 const agora = document.getElementById("agora");
 const cover = document.getElementById("cover");
 const barra = document.getElementById("barra");
 const bg = document.getElementById("bg");
 const btnRepeat = document.getElementById("btnRepeat");
-
 const tempoAtual = document.getElementById("tempoAtual");
 const tempoTotal = document.getElementById("tempoTotal");
+const legendaDiv = document.getElementById("legenda"); // Referência nova
 
 const capaPadrao = "https://via.placeholder.com/300x300?text=Music";
-   
-// Agora você usa esse link no fetch
-fetch(linkLegenda)
-  .then(response => response.text())
-  .then(textoLRC => {
-     // Aqui entra a lógica para processar o texto do .lrc
-     console.log("Legenda carregada:", textoLRC);
-  });
 
 /* CARREGAR */
 async function carregar(){
@@ -192,10 +183,7 @@ async function carregar(){
         const res = await fetch("musicas.json");
         musicas = await res.json();
         filtradas = [...musicas];
-
-        document.getElementById("totalMusicas").innerText =
-            "🎧 " + musicas.length + " músicas";
-
+        document.getElementById("totalMusicas").innerText = "🎧 " + musicas.length + " músicas";
         render();
     }catch(e){
         console.log("erro ao carregar musicas", e);
@@ -205,12 +193,10 @@ async function carregar(){
 /* LISTA */
 function render(){
     lista.innerHTML = "";
-
     filtradas.forEach((m,i)=>{
         lista.innerHTML += `
         <div class="music" onclick="play(${i})">
-            <img src="${m.capa}" loading="lazy"
-            onerror="this.src='${capaPadrao}'">
+            <img src="${m.capa}" loading="lazy" onerror="this.src='${capaPadrao}'">
             <div>${m.nome}</div>
         </div>`;
     });
@@ -218,10 +204,9 @@ function render(){
 
 /* PLAY */
 /* VARIÁVEL GLOBAL PARA A LEGENDA */
-let letras = []; 
-
-async function play(i){
-    const m = musicas[i]; // Pegamos a música atual
+    async function play(i){
+    const m = filtradas[i];
+    indexAtual = musicas.indexOf(m);
 
     audio.pause();
     audio.currentTime = 0;
@@ -232,19 +217,18 @@ async function play(i){
     cover.src = m.capa;
     bg.style.backgroundImage = `url('${m.capa}')`;
 
-    // A MÁGICA: Só tenta buscar se existir o campo "legenda" no JSON
+    // Reset legenda
+    letras = [];
+    legendaDiv.innerText = "";
+
     if (m.legenda) {
         try {
             const res = await fetch(`https://raw.githubusercontent.com/felipekoch24/MUSICAS_RAYSSA/main/${m.legenda}.lrc`);
             const text = await res.text();
             letras = parseLRC(text);
-            document.getElementById("legenda").innerText = ""; // Limpa aviso de carregamento
         } catch(e) {
-            document.getElementById("legenda").innerText = "";
+            console.log("Sem legenda disponível");
         }
-    } else {
-        letras = []; // Sem legenda para essa música
-        document.getElementById("legenda").innerText = "";
     }
 }
 
@@ -318,6 +302,18 @@ function format(t){
     return m+":"+s;
 }
 
+    function toggle(){ audio.paused ? audio.play() : audio.pause(); }
+function next(){ indexAtual++; if(indexAtual >= musicas.length) indexAtual = 0; play(indexAtual); }
+function prev(){ indexAtual--; if(indexAtual < 0) indexAtual = musicas.length - 1; play(indexAtual); }
+function toggleRepeat(){ repetir = !repetir; btnRepeat.style.background = repetir ? "#00ff88" : "#ff4fd8"; }
+audio.onended = ()=>{ repetir ? play(indexAtual) : next(); };
+function seek(e){ const w = e.currentTarget.clientWidth; audio.currentTime = (e.offsetX/w)*audio.duration; }
+
+document.getElementById("search").addEventListener("input",(e)=>{
+    const v = e.target.value.toLowerCase();
+    filtradas = musicas.filter(m=>m.nome.toLowerCase().includes(v));
+    render();
+});
 /* SEEK */
 function seek(e){
     const w = e.currentTarget.clientWidth;

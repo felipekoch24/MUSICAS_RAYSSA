@@ -3,280 +3,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>REPRODUTOR DE MÚSICA</title>
-
+<title>REPRODUTOR RAYSSA</title>
 <style>
-body{
-    margin:0;
-    color:#fff;
-    font-family:sans-serif;
-}
-
-.bg{
-    position:fixed;
-    width:100%;
-    height:100%;
-    top:0;
-    left:0;
-    background-size:cover;
-    background-position:center;
-    filter: blur(25px) brightness(0.4);
-    z-index:-1;
-}
-
-header{
-    text-align:center;
-    padding:10px;
-    font-size:20px;
-}
-
-#totalMusicas{
-    text-align:center;
-    font-size:13px;
-    opacity:0.8;
-}
-
-#search{
-    width:90%;
-    margin:10px auto;
-    display:block;
-    padding:10px;
-    border-radius:20px;
-    border:none;
-}
-
-#lista{
-    padding-bottom:180px;
-}
-
-.music{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    background:rgba(0,0,0,0.4);
-    margin:8px;
-    padding:10px;
-    border-radius:10px;
-    cursor:pointer;
-}
-
-.music img{
-    width:45px;
-    height:45px;
-    border-radius:8px;
-}
-
-.player{
-    position:fixed;
-    bottom:0;
-    width:100%;
-    background:rgba(0,0,0,0.75);
-    padding:10px;
-    text-align:center;
-}
-
-#cover{
-    width:100px;
-    height:100px;
-    object-fit:cover;
-    border-radius:12px;
-    margin:auto;
-}
-
-.time{
-    display:flex;
-    justify-content:space-between;
-    width:90%;
-    margin:auto;
-    font-size:12px;
-}
-
-.progress{
-    width:90%;
-    height:5px;
-    background:#444;
-    margin:8px auto;
-    border-radius:5px;
-}
-
-.progress-bar{
-    height:5px;
-    background:#ff4fd8;
-    width:0%;
-}
-
-.controls{
-    display:flex;
-    justify-content:center;
-    gap:8px;
-}
-
-button{
-    background:#ff4fd8;
-    border:none;
-    padding:12px;
-    border-radius:10px;
-    color:white;
-    font-size:16px;
-}
+    body { margin:0; color:#fff; font-family:sans-serif; }
+    .bg { position:fixed; width:100%; height:100%; top:0; left:0; background-size:cover; background-position:center; filter: blur(25px) brightness(0.4); z-index:-1; }
+    header { text-align:center; padding:10px; font-size:20px; }
+    #totalMusicas { text-align:center; font-size:13px; opacity:0.8; }
+    #search { width:90%; margin:10px auto; display:block; padding:10px; border-radius:20px; border:none; }
+    #lista { padding-bottom:180px; }
+    .music { display:flex; align-items:center; gap:10px; background:rgba(0,0,0,0.4); margin:8px; padding:10px; border-radius:10px; cursor:pointer; }
+    .music img { width:45px; height:45px; border-radius:8px; }
+    .player { position:fixed; bottom:0; width:100%; background:rgba(0,0,0,0.9); padding:10px; text-align:center; }
+    .time { display:flex; justify-content:space-between; width:90%; margin:auto; font-size:12px; }
+    .progress { width:90%; height:5px; background:#444; margin:8px auto; border-radius:5px; cursor:pointer; }
+    .progress-bar { height:5px; background:#ff4fd8; width:0%; }
+    .controls { display:flex; justify-content:center; gap:15px; margin-top:10px; }
+    button { background:#ff4fd8; border:none; padding:12px; border-radius:10px; color:white; font-size:16px; cursor:pointer; }
+    
+    /* TELA DE MÚSICA */
+    #telaMusica { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+    #telaMusica img { width: 250px; height: 250px; border-radius: 20px; }
+    #legendaTela { margin-top: 30px; font-size: 22px; text-align: center; color: #ff4fd8; width: 80%; height: 150px; overflow-y: auto; }
+    .btnFechar { position: absolute; top: 20px; left: 20px; font-size: 30px; cursor: pointer; color: white; }
 </style>
 </head>
-
 <body>
 
 <div class="bg" id="bg"></div>
-
 <header>🎧 REPRODUTOR RAYSSA</header>
 <div id="totalMusicas"></div>
-
 <input id="search" placeholder="🔍 BUSCAR MÚSICA...">
-
 <div id="lista"></div>
 
-<div class="player">
-    <img id="cover">
-    <div id="agora">Nenhuma música</div>
-
-    <div class="time">
-        <span id="tempoAtual">0:00</span>
-        <span id="tempoTotal">0:00</span>
-    </div>
-
-    <div class="progress" onclick="seek(event)">
+<div class="player" onclick="telaMusica.style.display='flex'">
+    <div id="agora" style="margin-bottom:10px; font-size:14px;">Toque para ver a letra</div>
+    <div class="progress" onclick="event.stopPropagation(); seek(event)">
         <div class="progress-bar" id="barra"></div>
-        <div id="legenda" style="margin: 10px; font-size: 14px; min-height: 20px; color: #ff4fd8;"></div>
     </div>
-
     <div class="controls">
-        <button onclick="prev()">⏮</button>
-        <button onclick="toggle()">⏯</button>
-        <button onclick="next()">⏭</button>
-        <button id="btnRepeat" onclick="toggleRepeat()">🔁</button>
+        <button onclick="event.stopPropagation(); prev()">⏮</button>
+        <button onclick="event.stopPropagation(); toggle()">⏯</button>
+        <button onclick="event.stopPropagation(); next()">⏭</button>
+        <button id="btnRepeat" onclick="event.stopPropagation(); toggleRepeat()">🔁</button>
     </div>
+</div>
+
+<div id="telaMusica">
+    <div class="btnFechar" onclick="fecharTela()">✖</div>
+    <img id="coverTela">
+    <div id="legendaTela">Aguardando música...</div>
 </div>
 
 <audio id="audio" preload="none"></audio>
 
 <script>
-let musicas = [];
-let filtradas = [];
-let indexAtual = 0;
-let repetir = false;
-let letras = []; 
+    let musicas = [], filtradas = [], indexAtual = 0, repetir = false, letras = [];
+    const audio = document.getElementById("audio"), lista = document.getElementById("lista"), agora = document.getElementById("agora");
+    const barra = document.getElementById("barra"), bg = document.getElementById("bg"), btnRepeat = document.getElementById("btnRepeat");
+    const telaMusica = document.getElementById("telaMusica"), legendaTela = document.getElementById("legendaTela"), coverTela = document.getElementById("coverTela");
 
-const audio = document.getElementById("audio");
-const lista = document.getElementById("lista");
-const agora = document.getElementById("agora");
-const cover = document.getElementById("cover");
-const barra = document.getElementById("barra");
-const bg = document.getElementById("bg");
-const btnRepeat = document.getElementById("btnRepeat");
-const tempoAtual = document.getElementById("tempoAtual");
-const tempoTotal = document.getElementById("tempoTotal");
-const legendaDiv = document.getElementById("legenda");
-
-const capaPadrao = "https://via.placeholder.com/300x300?text=Music";
-
-/* CARREGAR */
-async function carregar(){
-    try{
-        const res = await fetch("musicas.json");
-        musicas = await res.json();
-        filtradas = [...musicas];
-        document.getElementById("totalMusicas").innerText = "🎧 " + musicas.length + " músicas";
-        render();
-    }catch(e){
-        console.log("erro ao carregar musicas", e);
-    }
-}
-
-/* LISTA */
-function render(){
-    lista.innerHTML = "";
-    filtradas.forEach((m,i)=>{
-        lista.innerHTML += `
-        <div class="music" onclick="play(${i})">
-            <img src="${m.capa}" loading="lazy" onerror="this.src='${capaPadrao}'">
-            <div>${m.nome}</div>
-        </div>`;
-    });
-}
-
-/* PLAY */
-async function play(i){
-    const m = filtradas[i];
-    indexAtual = musicas.indexOf(m);
-
-    audio.pause();
-    audio.currentTime = 0;
-    audio.src = m.link;
-    audio.play().catch(()=>{});
-
-    agora.innerText = "▶ " + m.nome;
-    cover.src = m.capa;
-    bg.style.backgroundImage = `url('${m.capa}')`;
-
-    letras = [];
-    legendaDiv.innerText = "";
-
-    if (m.legenda) {
+    async function carregar(){
         try {
-            const res = await fetch(`https://raw.githubusercontent.com/felipekoch24/MUSICAS_RAYSSA/main/${m.legenda}.lrc`);
-            const text = await res.text();
-            letras = parseLRC(text);
-        } catch(e) {
-            console.log("Sem legenda disponível");
+            const res = await fetch("musicas.json");
+            musicas = await res.json();
+            filtradas = [...musicas];
+            document.getElementById("totalMusicas").innerText = "🎧 " + musicas.length + " músicas";
+            render();
+        } catch(e) { console.log("Erro ao carregar"); }
+    }
+
+    function render(){
+        lista.innerHTML = "";
+        filtradas.forEach((m,i)=>{
+            lista.innerHTML += `<div class="music" onclick="play(${i})"><img src="${m.capa}"><div>${m.nome}</div></div>`;
+        });
+    }
+
+    async function play(i){
+        const m = filtradas[i];
+        indexAtual = musicas.indexOf(m);
+        audio.src = m.link;
+        audio.play().catch(()=>{});
+        agora.innerText = "▶ " + m.nome;
+        coverTela.src = m.capa;
+        bg.style.backgroundImage = `url('${m.capa}')`;
+        telaMusica.style.display = "flex";
+        letras = [];
+        legendaTela.innerText = "Carregando letra...";
+        if (m.legenda) {
+            try {
+                const res = await fetch(`https://raw.githubusercontent.com/felipekoch24/MUSICAS_RAYSSA/main/${m.legenda}.lrc`);
+                letras = parseLRC(await res.text());
+            } catch(e) { legendaTela.innerText = "Sem legenda."; }
         }
     }
-}
 
-/* LEITOR DE LRC */
-function parseLRC(text) {
-    return text.split('\n').map(line => {
-        const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
-        if (!match) return null;
-        return { time: parseInt(match[1])*60 + parseFloat(match[2]), text: match[3] };
-    }).filter(l => l);
-}
+    function parseLRC(text) {
+        return text.split('\n').map(line => {
+            const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
+            if (!match) return null;
+            return { time: parseInt(match[1])*60 + parseFloat(match[2]), text: match[3] };
+        }).filter(l => l);
+    }
 
-/* ATUALIZAÇÃO ÚNICA */
-audio.ontimeupdate = ()=>{
-    if(audio.duration){
-        barra.style.width = (audio.currentTime/audio.duration)*100 + "%";
-        tempoAtual.innerText = format(audio.currentTime);
-        tempoTotal.innerText = format(audio.duration);
-        
+    audio.ontimeupdate = () => {
+        if(audio.duration) barra.style.width = (audio.currentTime/audio.duration)*100 + "%";
         if(letras.length > 0) {
             const currentLine = letras.filter(l => l.time <= audio.currentTime).pop();
-            legendaDiv.innerText = currentLine ? currentLine.text : "";
+            if(currentLine) legendaTela.innerText = currentLine.text;
         }
-    }
-};
+    };
 
-/* FORMATADOR */
-function format(t){
-    const m = Math.floor(t/60);
-    const s = Math.floor(t%60).toString().padStart(2,"0");
-    return m+":"+s;
-}
+    function fecharTela() { telaMusica.style.display = "none"; }
+    function toggle() { audio.paused ? audio.play() : audio.pause(); }
+    function next() { indexAtual = (indexAtual + 1) % musicas.length; play(indexAtual); }
+    function prev() { indexAtual = (indexAtual - 1 + musicas.length) % musicas.length; play(indexAtual); }
+    function toggleRepeat() { repetir = !repetir; btnRepeat.style.background = repetir ? "#00ff88" : "#ff4fd8"; }
+    function seek(e) { const w = e.currentTarget.clientWidth; audio.currentTime = (e.offsetX/w)*audio.duration; }
+    audio.onended = () => { repetir ? play(indexAtual) : next(); };
+    document.getElementById("search").addEventListener("input", (e) => {
+        filtradas = musicas.filter(m => m.nome.toLowerCase().includes(e.target.value.toLowerCase()));
+        render();
+    });
 
-/* CONTROLES */
-function toggle(){ audio.paused ? audio.play() : audio.pause(); }
-function next(){ indexAtual++; if(indexAtual >= musicas.length) indexAtual = 0; play(indexAtual); }
-function prev(){ indexAtual--; if(indexAtual < 0) indexAtual = musicas.length - 1; play(indexAtual); }
-function toggleRepeat(){ repetir = !repetir; btnRepeat.style.background = repetir ? "#00ff88" : "#ff4fd8"; }
-audio.onended = ()=>{ repetir ? play(indexAtual) : next(); };
-function seek(e){ const w = e.currentTarget.clientWidth; audio.currentTime = (e.offsetX/w)*audio.duration; }
-
-/* BUSCA */
-document.getElementById("search").addEventListener("input",(e)=>{
-    const v = e.target.value.toLowerCase();
-    filtradas = musicas.filter(m=>m.nome.toLowerCase().includes(v));
-    render();
-});
-
-/* START */
-carregar();
+    carregar();
 </script>
 </body>
 </html>

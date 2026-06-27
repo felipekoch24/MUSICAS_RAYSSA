@@ -162,7 +162,7 @@ let musicas = [];
 let filtradas = [];
 let indexAtual = 0;
 let repetir = false;
-let letras = []; // Variável global para a legenda
+let letras = []; 
 
 const audio = document.getElementById("audio");
 const lista = document.getElementById("lista");
@@ -173,7 +173,7 @@ const bg = document.getElementById("bg");
 const btnRepeat = document.getElementById("btnRepeat");
 const tempoAtual = document.getElementById("tempoAtual");
 const tempoTotal = document.getElementById("tempoTotal");
-const legendaDiv = document.getElementById("legenda"); // Referência nova
+const legendaDiv = document.getElementById("legenda");
 
 const capaPadrao = "https://via.placeholder.com/300x300?text=Music";
 
@@ -203,8 +203,7 @@ function render(){
 }
 
 /* PLAY */
-/* VARIÁVEL GLOBAL PARA A LEGENDA */
-    async function play(i){
+async function play(i){
     const m = filtradas[i];
     indexAtual = musicas.indexOf(m);
 
@@ -217,7 +216,6 @@ function render(){
     cover.src = m.capa;
     bg.style.backgroundImage = `url('${m.capa}')`;
 
-    // Reset legenda
     letras = [];
     legendaDiv.innerText = "";
 
@@ -241,89 +239,34 @@ function parseLRC(text) {
     }).filter(l => l);
 }
 
-/* ATUALIZAR LEGENDA NO TIMEUPDATE */
+/* ATUALIZAÇÃO ÚNICA */
 audio.ontimeupdate = ()=>{
     if(audio.duration){
         barra.style.width = (audio.currentTime/audio.duration)*100 + "%";
         tempoAtual.innerText = format(audio.currentTime);
         tempoTotal.innerText = format(audio.duration);
         
-        // --- DEBUG DA LEGENDA ---
         if(letras.length > 0) {
             const currentLine = letras.filter(l => l.time <= audio.currentTime).pop();
-            if(currentLine) {
-                legendaDiv.innerText = currentLine.text;
-                console.log("Legenda atual:", currentLine.text); // Isso vai mostrar no F12 -> Console
-            }
+            legendaDiv.innerText = currentLine ? currentLine.text : "";
         }
     }
 };
 
-/* CONTROLES */
-function toggle(){
-    if(audio.paused){
-        audio.play().catch(()=>{});
-    }else{
-        audio.pause();
-    }
-}
-
-function next(){
-    indexAtual++;
-    if(indexAtual >= musicas.length) indexAtual = 0;
-    play(indexAtual);
-}
-
-function prev(){
-    indexAtual--;
-    if(indexAtual < 0) indexAtual = musicas.length - 1;
-    play(indexAtual);
-}
-
-/* REPEAT */
-function toggleRepeat(){
-    repetir = !repetir;
-    btnRepeat.style.background = repetir ? "#00ff88" : "#ff4fd8";
-}
-
-/* AUTO */
-audio.onended = ()=>{
-    repetir ? play(indexAtual) : next();
-};
-
-/* TEMPO */
-audio.ontimeupdate = ()=>{
-    if(audio.duration){
-        barra.style.width = (audio.currentTime/audio.duration)*100 + "%";
-
-        tempoAtual.innerText = format(audio.currentTime);
-        tempoTotal.innerText = format(audio.duration);
-    }
-};
-
+/* FORMATADOR */
 function format(t){
     const m = Math.floor(t/60);
     const s = Math.floor(t%60).toString().padStart(2,"0");
     return m+":"+s;
 }
 
-    function toggle(){ audio.paused ? audio.play() : audio.pause(); }
+/* CONTROLES */
+function toggle(){ audio.paused ? audio.play() : audio.pause(); }
 function next(){ indexAtual++; if(indexAtual >= musicas.length) indexAtual = 0; play(indexAtual); }
 function prev(){ indexAtual--; if(indexAtual < 0) indexAtual = musicas.length - 1; play(indexAtual); }
 function toggleRepeat(){ repetir = !repetir; btnRepeat.style.background = repetir ? "#00ff88" : "#ff4fd8"; }
 audio.onended = ()=>{ repetir ? play(indexAtual) : next(); };
 function seek(e){ const w = e.currentTarget.clientWidth; audio.currentTime = (e.offsetX/w)*audio.duration; }
-
-document.getElementById("search").addEventListener("input",(e)=>{
-    const v = e.target.value.toLowerCase();
-    filtradas = musicas.filter(m=>m.nome.toLowerCase().includes(v));
-    render();
-});
-/* SEEK */
-function seek(e){
-    const w = e.currentTarget.clientWidth;
-    audio.currentTime = (e.offsetX/w)*audio.duration;
-}
 
 /* BUSCA */
 document.getElementById("search").addEventListener("input",(e)=>{
@@ -334,8 +277,6 @@ document.getElementById("search").addEventListener("input",(e)=>{
 
 /* START */
 carregar();
-
 </script>
-
 </body>
 </html>

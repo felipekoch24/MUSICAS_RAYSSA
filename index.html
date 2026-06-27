@@ -84,6 +84,11 @@ const telaMusica = document.getElementById("telaMusica"), legendaTela = document
         try {
             const res = await fetch("musicas.json");
             musicas = await res.json();
+
+            // --- ADICIONE ESTA LINHA ---
+        musicas.sort((a, b) => a.nome.localeCompare(b.nome)); 
+        // ---------------------------
+            
             filtradas = [...musicas];
             document.getElementById("totalMusicas").innerText = "🎧 " + musicas.length + " músicas";
             render();

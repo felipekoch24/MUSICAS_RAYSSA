@@ -221,9 +221,7 @@ function render(){
 let letras = []; 
 
 async function play(i){
-    const musica = filtradas[i];
-    indexAtual = musicas.indexOf(musica);
-    const m = musicas[indexAtual];
+    const m = musicas[i]; // Pegamos a música atual
 
     audio.pause();
     audio.currentTime = 0;
@@ -234,15 +232,18 @@ async function play(i){
     cover.src = m.capa;
     bg.style.backgroundImage = `url('${m.capa}')`;
 
-    // --- NOVA LÓGICA DE LEGENDA ---
-    document.getElementById("legenda").innerText = "CARREGANDO LETRA...";
-    try {
-        // Supondo que no seu JSON você tenha o nome do arquivo em 'm.id'
-        const res = await fetch(`https://raw.githubusercontent.com/felipekoch24/MUSICAS_RAYSSA/main/${m.id}.lrc`);
-        const text = await res.text();
-        letras = parseLRC(text);
-        document.getElementById("legenda").innerText = "";
-    } catch(e) {
+    // A MÁGICA: Só tenta buscar se existir o campo "legenda" no JSON
+    if (m.legenda) {
+        try {
+            const res = await fetch(`https://raw.githubusercontent.com/felipekoch24/MUSICAS_RAYSSA/main/${m.legenda}.lrc`);
+            const text = await res.text();
+            letras = parseLRC(text);
+            document.getElementById("legenda").innerText = ""; // Limpa aviso de carregamento
+        } catch(e) {
+            document.getElementById("legenda").innerText = "";
+        }
+    } else {
+        letras = []; // Sem legenda para essa música
         document.getElementById("legenda").innerText = "";
     }
 }

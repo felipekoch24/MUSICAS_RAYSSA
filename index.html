@@ -4,10 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>REPRODUTOR RAYSSA</title>
+
+<!-- CONFIGURAÇÕES PARA INSTALAÇÃO NO CELULAR (ANDROID / IPHONE) -->
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" type="image/png" href="logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rayssa Player">
+<link rel="manifest" href="manifest.json">
+
 <style>
     body { margin:0; color:#fff; font-family:sans-serif; }
     .bg { position:fixed; width:100%; height:100%; top:0; left:0; background-size:cover; background-position:center; filter: blur(25px) brightness(0.4); z-index:-1; }
-    header { text-align:center; padding:10px; font-size:20px; }
+    
+    /* ESTILO DO CABEÇALHO COM A LOGO */
+    header { text-align:center; padding:15px; font-size:20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .logo-img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
+
     #totalMusicas { text-align:center; font-size:13px; opacity:0.8; }
     #search { width:90%; margin:10px auto; display:block; padding:10px; border-radius:20px; border:none; }
     #lista { padding-bottom:180px; }
@@ -19,16 +32,16 @@
     .progress-bar { height:5px; background:#ff4fd8; width:0%; }
     .controls { display:flex; justify-content:center; gap:15px; margin-top:10px; }
     button { background:#ff4fd8; border:none; padding:12px; border-radius:10px; color:white; font-size:16px; cursor:pointer; }
-    /* Se tiver algo como #btnRepeat, mude para: */
-.btnRepeat {
-    background: #ff4fd8;
-    border: none;
-    padding: 12px;
-    border-radius: 10px;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-}
+    
+    .btnRepeat {
+        background: #ff4fd8;
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
     
     /* TELA DE MÚSICA */
     #telaMusica { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
@@ -40,7 +53,12 @@
 <body>
 
 <div class="bg" id="bg"></div>
-<header>🎧 REPRODUTOR RAYSSA</header>
+
+<header>
+    <img src="logo.png" alt="Logo" class="logo-img">
+    REPRODUTOR RAYSSA
+</header>
+
 <div id="totalMusicas"></div>
 <input id="search" placeholder="🔍 BUSCAR MÚSICA...">
 <div id="lista"></div>
@@ -75,34 +93,28 @@
 
 <script>
     let musicas = [], filtradas = [], indexAtual = 0, repetir = false, letras = [];
-    //CONSTANTES//
     const audio = document.getElementById("audio"), lista = document.getElementById("lista"), agora = document.getElementById("agora");
-const barra = document.getElementById("barra"), bg = document.getElementById("bg");
-const telaMusica = document.getElementById("telaMusica"), legendaTela = document.getElementById("legendaTela"), coverTela = document.getElementById("coverTela")
-   //FUNÇÃO CARREGAR//
+    const barra = document.getElementById("barra"), bg = document.getElementById("bg");
+    const telaMusica = document.getElementById("telaMusica"), legendaTela = document.getElementById("legendaTela"), coverTela = document.getElementById("coverTela")
+
     async function carregar(){
         try {
             const res = await fetch("musicas.json");
             musicas = await res.json();
-
-            // --- ADICIONE ESTA LINHA ---
-        musicas.sort((a, b) => a.nome.localeCompare(b.nome)); 
-        // ---------------------------
-            
+            musicas.sort((a, b) => a.nome.localeCompare(b.nome)); 
             filtradas = [...musicas];
             document.getElementById("totalMusicas").innerText = "🎧 " + musicas.length + " músicas";
             render();
         } catch(e) { console.log("Erro ao carregar"); }
     }
-//FUNÇÃO RENDERIZAR//
+
     function render(){
         lista.innerHTML = "";
         filtradas.forEach((m,i)=>{
-            lista.innerHTML += `<div class="music" onclick="play(${i})"><img src="${m.capa}"><div>${m.nome}</div></div>`; //CONSTRUTOR DA VITRINE//
+            lista.innerHTML += `<div class="music" onclick="play(${i})"><img src="${m.capa}"><div>${m.nome}</div></div>`;
         });
     }
-// FUNÇÃO PLAYER//
-    // --- CARREGA A LISTA DE MÚSICAS DO JSON ---
+
     async function play(i){
         const m = filtradas[i];
         indexAtual = musicas.indexOf(m);
@@ -116,13 +128,12 @@ const telaMusica = document.getElementById("telaMusica"), legendaTela = document
         legendaTela.innerText = "Carregando letra...";
         if (m.legenda) {
             try {
-                const res = await fetch(`https://raw.githubusercontent.com/felipekoch24/MUSICAS_RAYSSA/main/${m.legenda}.lrc`); // FETCH É O MENSAGEIRO//
+                const res = await fetch(`https://raw.githubusercontent.com/felipekoch24/MUSICAS_RAYSSA/main/${m.legenda}.lrc`);
                 letras = parseLRC(await res.text());
             } catch(e) { legendaTela.innerText = "Sem legenda."; }
         }
     }
-// FUNÇÃO DO TRADUTOR//
-    // --- TRADUZ O ARQUIVO .LRC PARA UM FORMATO QUE O JS ENTENDA (TEMPO E TEXTO) ---
+
     function parseLRC(text) {
         return text.split('\n').map(line => {
             const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
@@ -130,7 +141,7 @@ const telaMusica = document.getElementById("telaMusica"), legendaTela = document
             return { time: parseInt(match[1])*60 + parseFloat(match[2]), text: match[3] };
         }).filter(l => l);
     }
-// FUNÇÃO DO FISCAL GERAL (ONTIMEUPDATE) // --- ATUALIZA A TELA E A LEGENDA A CADA MILISSEGUNDO DA MÚSICA ---//
+
     audio.ontimeupdate = () => {
         if(audio.duration) barra.style.width = (audio.currentTime/audio.duration)*100 + "%";
         if(letras.length > 0) {
@@ -139,26 +150,25 @@ const telaMusica = document.getElementById("telaMusica"), legendaTela = document
         }
     };
 
-    function fecharTela() { telaMusica.style.display = "none"; } //FECHAR TELA//
-    function toggle() { audio.paused ? audio.play() : audio.pause(); } // FUNÇÃO PLAY/PAUSE //
-    function next() { indexAtual = (indexAtual + 1) % musicas.length; play(indexAtual); } // --- PULA PARA A PRÓXIMA MÚSICA DA LISTA ---
-    function prev() { indexAtual = (indexAtual - 1 + musicas.length) % musicas.length; play(indexAtual); } // --- VOLTA PARA A MÚSICA ANTERIOR DA LISTA ---
-    function seek(e) { const w = e.currentTarget.clientWidth; audio.currentTime = (e.offsetX/w)*audio.duration; } // --- NAVEGAÇÃO: Pula para uma parte específica da música ao clicar na barra ---
+    function fecharTela() { telaMusica.style.display = "none"; }
+    function toggle() { audio.paused ? audio.play() : audio.pause(); }
+    function next() { indexAtual = (indexAtual + 1) % musicas.length; play(indexAtual); }
+    function prev() { indexAtual = (indexAtual - 1 + musicas.length) % musicas.length; play(indexAtual); }
+    function seek(e) { const w = e.currentTarget.clientWidth; audio.currentTime = (e.offsetX/w)*audio.duration; }
     audio.onended = () => { repetir ? play(indexAtual) : next(); };
+    
     document.getElementById("search").addEventListener("input", (e) => {
         filtradas = musicas.filter(m => m.nome.toLowerCase().includes(e.target.value.toLowerCase()));
         render();
     });
-    //FUNÇÃO QUE FUNCIONA O REPETIR//
+
     function toggleRepeat() {
-    repetir = !repetir;
-    // Pega todos os botões que têm a classe 'btnRepeat'
-    const botoes = document.querySelectorAll('.btnRepeat');
-    // Aplica a cor em todos eles
-    botoes.forEach(btn => {
-        btn.style.background = repetir ? "#00ff88" : "#ff4fd8";
-    });
-}
+        repetir = !repetir;
+        const botoes = document.querySelectorAll('.btnRepeat');
+        botoes.forEach(btn => {
+            btn.style.background = repetir ? "#00ff88" : "#ff4fd8";
+        });
+    }
 
     carregar();
 </script>
